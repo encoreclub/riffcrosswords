@@ -29,7 +29,7 @@ const { useState, useEffect, useCallback, useRef } = React;
 // RIFF WORD GAMES — Full App
 // Genre accents: Jazz=mustard, Rock=black/white, Pop Culture=purple
 // Gradient aesthetic from Encore/Plaineth references
-// Font: Spline Sans ONLY
+// Font: Spline Sans ONLY — ALL FREE, no paywall
 // ═══════════════════════════════════════════════════════════════
 
 const GENRE_THEMES = {
@@ -185,6 +185,13 @@ const IconWave = ({ color, size = 22 }) => (
     <line x1="20" y1="8" x2="20" y2="16" />
   </svg>
 );
+const IconNote = ({ color, size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 18V5l12-2v13" />
+    <circle cx="6" cy="18" r="3" fill={color} opacity="0.3" stroke={color} />
+    <circle cx="18" cy="16" r="3" fill={color} opacity="0.3" stroke={color} />
+  </svg>
+);
 const IconBolt = ({ color, size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
 );
@@ -252,6 +259,17 @@ const IconGear = ({ color, size = 16 }) => (
     <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
   </svg>
 );
+const IconClock = ({ color, size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
+    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+const IconTrophy = ({ color, size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2" /><path d="M18 9h2a2 2 0 002-2V5a2 2 0 00-2-2h-2" />
+    <path d="M6 3h12v7a6 6 0 01-12 0V3z" /><path d="M9 21h6" /><path d="M12 16v5" />
+  </svg>
+);
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -271,16 +289,46 @@ function getMusicalGreeting() {
 
 const SCREENS = {
   HOME: "home", CROSSWORDS: "crosswords", SOLO: "solo", MINI: "mini", GROOVE: "groove",
-  STATS: "stats", SHARE: "share", AUTH: "auth", PAYWALL: "paywall",
+  STATS: "stats", SHARE: "share", AUTH: "auth",
   PROFILE: "profile", SETTINGS: "settings", HOW_TO_PLAY: "how_to_play", ARCHIVE: "archive",
 };
 
 // ── Main App ───────────────────────────────────────────────────
 
+// ── Trivia data per genre ──────────────────────────────────────
+const TRIVIA = {
+  Jazz: [
+    "John Coltrane practiced for 12 hours a day, sometimes falling asleep with the saxophone still in his mouth.",
+    "Miles Davis recorded 'Kind of Blue' in just two sessions at Columbia's 30th Street Studio in 1959.",
+    "Thelonious Monk would sometimes stand up from the piano mid-performance and dance in circles.",
+    "The word 'jazz' first appeared in print in 1912 in a Los Angeles newspaper — as a baseball term.",
+  ],
+  Rock: [
+    "Led Zeppelin's 'Stairway to Heaven' was never released as a single, yet it's one of the most requested songs in radio history.",
+    "The Beatles hold the record for most number-one hits on the Billboard Hot 100 with 20 songs.",
+    "Jimi Hendrix was self-taught and couldn't read music. He played a right-handed guitar flipped upside down.",
+    "Pink Floyd's 'The Dark Side of the Moon' spent 937 weeks on the Billboard 200 chart.",
+  ],
+  "Pop Culture": [
+    "Beyonce's 'Lemonade' was the first album to debut at #1 with all songs charting on the Hot 100.",
+    "Taylor Swift is the only artist to have five albums sell over one million copies in their first week.",
+    "Billie Eilish recorded her debut album 'When We All Fall Asleep' entirely in her brother's small bedroom.",
+    "Drake holds the record for most songs to chart on the Billboard Hot 100 simultaneously — 27 songs.",
+  ],
+};
+
+// ── Spotify playlists per genre ────────────────────────────────
+const SPOTIFY_PLAYLISTS = {
+  Jazz: { name: "Jazz Essentials", desc: "Coltrane, Davis, Monk and more" },
+  Rock: { name: "Classic Rock Legends", desc: "Zeppelin, Floyd, Hendrix and more" },
+  "Pop Culture": { name: "Pop Hits Today", desc: "Beyonce, Drake, Swift and more" },
+};
+
 function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [screen, setScreen] = useState(SCREENS.HOME);
   const [genre, setGenre] = useState("Jazz");
+  const [difficulty, setDifficulty] = useState("Beginner");
   const [history, setHistory] = useState([]);
 
   const navigate = (s) => { setHistory(prev => [...prev, screen]); setScreen(s); };
@@ -297,13 +345,15 @@ function App() {
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const dateStr = `${days[today.getDay()]}, ${months[today.getMonth()]} ${today.getDate()}`;
 
-  const genreLabel = genre === "Pop Culture" ? "Riff Pop Culture" : `Riff ${genre}`;
+  // Genre label: "Riff Jazz" / "Riff Rock" / "Riff Pop Culture"
+  const genreName = genre;
+  const genreLabel = `Riff ${genreName}`;
 
   const games = [
-    { id: "crosswords", name: "Crosswords", desc: "Full 11×11 themed crossword", icon: IconCrossword, time: "~15 min", free: true, screen: SCREENS.CROSSWORDS },
-    { id: "groove", name: "Groove", desc: "Find 8 hidden words", icon: IconWave, time: "~5 min", free: true, screen: SCREENS.GROOVE },
-    { id: "solo", name: "Solo", desc: "Guess the word in 6 tries", icon: IconTile, time: "~3 min", free: false, screen: SCREENS.SOLO },
-    { id: "mini", name: "Mini", desc: "5×5 quick crossword", icon: IconGrid, time: "~2 min", free: false, screen: SCREENS.MINI },
+    { id: "crosswords", name: "Crosswords", desc: "Full 11x11 themed crossword", icon: IconCrossword, time: "~15 min", screen: SCREENS.CROSSWORDS },
+    { id: "groove", name: "Groove", desc: "Find 8 hidden words", icon: IconWave, time: "~5 min", screen: SCREENS.GROOVE },
+    { id: "solo", name: "Solo", desc: "Guess the word in 6 tries", icon: IconTile, time: "~3 min", screen: SCREENS.SOLO },
+    { id: "mini", name: "Mini", desc: "5x5 quick crossword", icon: IconGrid, time: "~2 min", screen: SCREENS.MINI },
   ];
 
   // ── Shell wrapper ──
@@ -343,26 +393,11 @@ function App() {
     <div style={{ minHeight: "100vh", background: t.bg, transition: "background 0.35s", ...f(), overflow: "hidden" }}>
       <div style={{ maxWidth: 420, margin: "0 auto", paddingBottom: 80, position: "relative" }}>
 
-        {/* Gradient header glow */}
-        <div style={{
-          position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)",
-          width: 420, height: 220, background: t.gradientSoft,
-          borderRadius: "0 0 50% 50%", opacity: 0.7, pointerEvents: "none",
-        }} />
-
-        {/* Top bar */}
+        {/* Top bar — no streak badge, just help + stats + profile */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px 0", position: "relative", zIndex: 1 }}>
           <button onClick={() => navigate(SCREENS.HOW_TO_PLAY)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
             <IconHelp color={t.muted} size={20} />
           </button>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 6,
-            background: t.streakBg, border: `1px solid ${t.streakBorder}`,
-            borderRadius: 20, padding: "5px 14px 5px 10px",
-          }}>
-            <IconBolt color={t.accent} size={13} />
-            <span style={{ ...f(600, 13), color: t.accent }}>12</span>
-          </div>
           <div style={{ display: "flex", gap: 4 }}>
             <button onClick={() => navigate(SCREENS.STATS)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
               <IconBar color={t.muted} size={20} />
@@ -373,13 +408,16 @@ function App() {
           </div>
         </div>
 
-        {/* Header */}
-        <header style={{ textAlign: "center", padding: "20px 20px 0", position: "relative", zIndex: 1 }}>
-          <h1 style={{ ...f(700, 44), margin: 0, lineHeight: 1, letterSpacing: "-0.03em",
-            background: t.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-          }}>Riff</h1>
-          <p style={{ ...f(500, 11), color: t.muted, marginTop: 6, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-            {genreLabel}: Word Games
+        {/* Header — "Riff Jazz" line 1 + music icon, "Word Games" line 2 */}
+        <header style={{ textAlign: "center", padding: "24px 20px 0", position: "relative", zIndex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <IconNote color={t.accent} size={22} />
+            <h1 style={{ ...f(700, 38), margin: 0, lineHeight: 1, letterSpacing: "-0.03em",
+              background: t.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+            }}>{genreLabel}</h1>
+          </div>
+          <p style={{ ...f(500, 13), color: t.muted, marginTop: 6, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Word Games
           </p>
           <p style={{ ...f(400, 12), color: t.muted, marginTop: 4 }}>
             {getMusicalGreeting()}. {dateStr}.
@@ -405,27 +443,33 @@ function App() {
           })}
         </nav>
 
-        {/* Difficulty pills */}
+        {/* Difficulty pills — interactive */}
         <div style={{ display: "flex", justifyContent: "center", gap: 6, margin: "14px 20px" }}>
-          {[
-            { label: "Beginner", active: true },
-            { label: "Standard" },
-            { label: "Expert", locked: true },
-            { label: "Legendary", locked: true },
-          ].map((d) => (
-            <button key={d.label} style={{
-              padding: "5px 12px",
-              background: d.active ? t.accentSoft : "transparent",
-              border: `1px solid ${d.active ? t.accentBorder : t.divider}`,
-              borderRadius: 20, ...f(500, 10),
-              color: d.locked ? t.muted : (d.active ? t.accent : t.textSecondary),
-              cursor: d.locked ? "default" : "pointer",
-              opacity: d.locked ? 0.3 : 1,
-              display: "flex", alignItems: "center", gap: 4,
-            }}>
-              {d.label}{d.locked && <IconLock color={t.muted} size={8} />}
-            </button>
-          ))}
+          {["Beginner", "Standard", "Expert", "Legendary"].map((d) => {
+            const active = d === difficulty;
+            return (
+              <button key={d} onClick={() => setDifficulty(d)} style={{
+                padding: "5px 12px",
+                background: active ? t.accentSoft : "transparent",
+                border: `1px solid ${active ? t.accentBorder : t.divider}`,
+                borderRadius: 20, ...f(500, 10),
+                color: active ? t.accent : t.textSecondary,
+                cursor: "pointer", transition: "all 0.2s",
+              }}>
+                {d}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Difficulty indicator */}
+        <div style={{ textAlign: "center", padding: "0 20px 4px" }}>
+          <span style={{ ...f(400, 11), color: t.muted }}>
+            {difficulty === "Beginner" && "Easier clues, common words"}
+            {difficulty === "Standard" && "Mixed difficulty, genre knowledge helps"}
+            {difficulty === "Expert" && "Obscure terms, fewer hints available"}
+            {difficulty === "Legendary" && "No hints, deep genre knowledge required"}
+          </span>
         </div>
 
         {/* Progress */}
@@ -439,15 +483,14 @@ function App() {
           </div>
         </div>
 
-        {/* Game cards */}
+        {/* Game cards — ALL FREE */}
         <div style={{ padding: "8px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
           {games.map((game) => (
-            <div key={game.id} onClick={() => game.free ? navigate(game.screen) : navigate(SCREENS.PAYWALL)}
+            <div key={game.id} onClick={() => navigate(game.screen)}
               style={{
                 background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14,
                 padding: "14px 16px", display: "flex", alignItems: "center", gap: 14,
-                cursor: "pointer", boxShadow: t.cardShadow,
-                opacity: game.free ? 1 : 0.55, transition: "all 0.15s",
+                cursor: "pointer", boxShadow: t.cardShadow, transition: "all 0.15s",
               }}>
               <div style={{
                 width: 46, height: 46, borderRadius: 12, background: t.gradientSoft,
@@ -457,16 +500,7 @@ function App() {
                 <game.icon color={t.accent} size={22} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                  <span style={{ ...f(600, 15), color: t.text }}>{game.name}</span>
-                  {!game.free && (
-                    <span style={{
-                      display: "inline-flex", alignItems: "center", gap: 3,
-                      background: t.accentSoft, padding: "2px 8px", borderRadius: 6,
-                      ...f(600, 9), color: t.accent, letterSpacing: "0.06em", textTransform: "uppercase",
-                    }}><IconLock color={t.accent} size={8} />Premium</span>
-                  )}
-                </div>
+                <span style={{ ...f(600, 15), color: t.text, display: "block", marginBottom: 2 }}>{game.name}</span>
                 <span style={{ ...f(400, 12), color: t.muted }}>{game.desc}</span>
               </div>
               <span style={{ ...f(400, 11), color: t.muted, flexShrink: 0, opacity: 0.6 }}>{game.time}</span>
@@ -476,21 +510,16 @@ function App() {
 
         <div style={{ height: 1, background: t.divider, margin: "14px 20px" }} />
 
-        {/* Back Catalog */}
+        {/* Back Catalog — FREE */}
         <div style={{ padding: "0 20px" }}>
-          <div onClick={() => navigate(SCREENS.PAYWALL)} style={{
+          <div onClick={() => navigate(SCREENS.ARCHIVE)} style={{
             background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14,
             padding: "13px 16px", display: "flex", justifyContent: "space-between", alignItems: "center",
-            cursor: "pointer", boxShadow: t.cardShadow, opacity: 0.55,
+            cursor: "pointer", boxShadow: t.cardShadow,
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <IconCalendar color={t.accent} size={18} />
               <span style={{ ...f(500, 14), color: t.text }}>Back Catalog</span>
-              <span style={{
-                display: "inline-flex", alignItems: "center", gap: 3,
-                background: t.accentSoft, padding: "2px 8px", borderRadius: 6,
-                ...f(600, 9), color: t.accent, letterSpacing: "0.06em", textTransform: "uppercase",
-              }}><IconLock color={t.accent} size={8} />Premium</span>
             </div>
             <IconArrow color={t.muted} size={14} />
           </div>
@@ -518,33 +547,92 @@ function App() {
     </div>
   );
 
+  // ── Reusable: Clue row with hint toggle ──
+  const ClueRow = ({ clue, hint }) => {
+    const [showHint, setShowHint] = useState(false);
+    const canHint = difficulty !== "Legendary";
+    return (
+      <div style={{ padding: "6px 0", borderBottom: `1px solid ${t.divider}` }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ ...f(400, 13), color: t.text, flex: 1 }}>{clue}</span>
+          {canHint && (
+            <button onClick={() => setShowHint(!showHint)} style={{
+              background: showHint ? t.accentSoft : "transparent", border: `1px solid ${showHint ? t.accentBorder : t.divider}`,
+              borderRadius: 6, padding: "2px 8px", cursor: "pointer", marginLeft: 8, flexShrink: 0,
+              ...f(500, 9), color: t.accent, letterSpacing: "0.04em",
+            }}>Hint</button>
+          )}
+        </div>
+        {showHint && hint && (
+          <div style={{ ...f(400, 11), color: t.amber, marginTop: 4, paddingLeft: 8, borderLeft: `2px solid ${t.amber}40` }}>{hint}</div>
+        )}
+      </div>
+    );
+  };
+
+  // ── Reusable: Trivia box ──
+  const TriviaBox = () => {
+    const triviaList = TRIVIA[genre] || TRIVIA.Jazz;
+    const idx = today.getDate() % triviaList.length;
+    return (
+      <div style={{ margin: "14px 20px", padding: "14px 16px", background: t.accentSoft, border: `1px solid ${t.accentBorder}`, borderRadius: 12 }}>
+        <div style={{ ...f(600, 11), color: t.accent, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>Did you know?</div>
+        <div style={{ ...f(400, 13), color: t.text, lineHeight: 1.5 }}>{triviaList[idx]}</div>
+      </div>
+    );
+  };
+
+  // ── Reusable: Spotify invite ──
+  const SpotifyInvite = () => {
+    const pl = SPOTIFY_PLAYLISTS[genre] || SPOTIFY_PLAYLISTS.Jazz;
+    return (
+      <div style={{ margin: "0 20px 20px", padding: "12px 16px", background: t.greenSoft, border: `1px solid ${t.green}40`, borderRadius: 12, display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+        <IconPlay color={t.green} size={16} />
+        <div style={{ flex: 1 }}>
+          <div style={{ ...f(500, 13), color: t.green }}>{pl.name}</div>
+          <div style={{ ...f(400, 11), color: t.green, opacity: 0.7 }}>{pl.desc}</div>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      </div>
+    );
+  };
+
   // ═════════════════════════════════════════════
-  // CROSSWORDS (11×11)
+  // CROSSWORDS (7x7 demo)
   // ═════════════════════════════════════════════
   if (screen === SCREENS.CROSSWORDS) {
     const SIZE = 7;
     const grid = [
-      ["C","O","L","T","R","A","N"],
-      ["H"," ","E"," ","I"," ","O"],
-      ["O","C","T","A","V","E","T"],
-      ["R"," ","S"," ","E"," ","E"],
-      ["D","U","O","N","R","I","S"],
-      ["S"," ","N"," ","B"," "," "],
-      ["J","A","Z","Z","I","N","G"],
+      ["","","","","","",""],
+      [""," ","","","","",""],
+      ["","","","","","",""],
+      [""," ",""," ","","",""],
+      ["","","","","","",""],
+      [""," ",""," ",""," ",""],
+      ["","","","","","",""],
     ];
-    const blacks = [[1,1],[1,3],[1,5],[3,1],[3,3],[3,5],[5,1],[5,3],[5,5],[5,6]];
+    const blacks = [[1,1],[3,1],[3,3],[5,1],[5,3],[5,5]];
     const isBlack = (r,c) => blacks.some(([a,b])=>a===r&&b===c);
-    const clues = {
-      across: ["1A: Legendary saxophonist John ___","3A: Musical interval of 8 notes","5A: Two musicians playing together","7A: Improvising rhythmically"],
-      down: ["1D: ___ progression (music)","2D: Lesson material","3D: Whole ___ (two beats)"],
+    const cluesData = {
+      across: [
+        { clue: "1A: Legendary saxophonist John ___", hint: "His album 'A Love Supreme' changed jazz forever" },
+        { clue: "3A: Musical interval of 8 notes", hint: "From C to the next C, for example" },
+        { clue: "5A: Two musicians playing together", hint: "A ___ is smaller than a trio" },
+        { clue: "7A: Improvising rhythmically", hint: "What a jazz musician does when they feel the groove" },
+      ],
+      down: [
+        { clue: "1D: ___ progression (music)", hint: "A sequence of harmonies" },
+        { clue: "2D: Lesson material", hint: "What a student studies from" },
+        { clue: "3D: Whole ___ (two beats)", hint: "A type of musical duration" },
+      ],
     };
     return (
       <Shell title="Crosswords" showBack>
         <div style={{ textAlign: "center", padding: "12px 20px 4px" }}>
-          <span style={{ ...f(400, 11), color: t.muted }}>Puzzle #42 — {dateStr} — {genre}</span>
+          <span style={{ ...f(400, 11), color: t.muted }}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span>
         </div>
         <div style={{ textAlign: "center", padding: "4px 20px 8px" }}>
-          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>4:32</span>
+          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>0:00</span>
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 16, padding: "0 20px 12px" }}>
           {["Clues","Check","Reveal","Clear"].map((b) => (
@@ -556,7 +644,7 @@ function App() {
             <div key={ri} style={{ display: "flex", gap: 1 }}>
               {row.map((cell, ci) => {
                 const black = isBlack(ri,ci);
-                const active = ri===0 && ci===2;
+                const active = ri===0 && ci===0;
                 const highlight = ri===0 && !black;
                 return (
                   <div key={ci} style={{
@@ -566,7 +654,7 @@ function App() {
                     display: "flex", alignItems: "center", justifyContent: "center",
                     ...f(600, 16), color: active?t.pillText:t.text, position: "relative",
                   }}>
-                    {!black && cell !== " " && cell}
+                    {ri===0 && ci===0 && <span style={{ position:"absolute", top:2, left:4, ...f(400,8), color: active?`${t.pillText}B3`:t.muted }}>1</span>}
                   </div>
                 );
               })}
@@ -578,23 +666,25 @@ function App() {
           <span style={{ ...f(400, 13), color: t.text }}>1A: Legendary saxophonist John ___</span>
           <IconChevron color={t.muted} size={16} dir="right" />
         </div>
-        <div style={{ padding: "0 20px 40px" }}>
+        <div style={{ padding: "0 20px 0" }}>
           <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Across</div>
-          {clues.across.map((c,i) => <div key={i} style={{ ...f(400, 13), color: t.text, padding: "6px 0", borderBottom: `1px solid ${t.divider}` }}>{c}</div>)}
+          {cluesData.across.map((c,i) => <ClueRow key={`a${i}`} clue={c.clue} hint={c.hint} />)}
           <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 16, marginBottom: 8 }}>Down</div>
-          {clues.down.map((c,i) => <div key={i} style={{ ...f(400, 13), color: t.text, padding: "6px 0", borderBottom: `1px solid ${t.divider}` }}>{c}</div>)}
+          {cluesData.down.map((c,i) => <ClueRow key={`d${i}`} clue={c.clue} hint={c.hint} />)}
         </div>
+        <TriviaBox />
+        <SpotifyInvite />
       </Shell>
     );
   }
 
   // ═════════════════════════════════════════════
-  // SOLO
+  // SOLO (empty state — no pre-filled guesses)
   // ═════════════════════════════════════════════
   if (screen === SCREENS.SOLO) {
     const guesses = [
-      { letters: ["B","L","U","E","S"], colors: ["absent","absent","correct","absent","present"] },
-      { letters: ["M","U","T","E","D"], colors: ["absent","correct","absent","absent","absent"] },
+      { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
+      { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
       { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
       { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
       { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
@@ -603,14 +693,13 @@ function App() {
     const cMap = { correct: t.green, present: t.amber, absent: darkMode?"#333":"#D0D0D0", empty: "transparent" };
     const bMap = { correct: t.green, present: t.amber, absent: darkMode?"#444":"#D0D0D0", empty: darkMode?"#333":"#D0D0D0" };
     const keyboard = [["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["Enter","Z","X","C","V","B","N","M","Del"]];
-    const kc = { E:"present", U:"correct", B:"absent", L:"absent", S:"present", M:"absent", T:"absent", D:"absent" };
     return (
       <Shell title="Solo" showBack>
         <div style={{ textAlign: "center", padding: "12px 20px 4px" }}>
-          <span style={{ ...f(400, 11), color: t.muted }}>Puzzle #42 — {dateStr} — {genre}</span>
+          <span style={{ ...f(400, 11), color: t.muted }}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span>
         </div>
         <div style={{ textAlign: "center", padding: "4px 20px 16px" }}>
-          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>1:24</span>
+          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>0:00</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "0 20px" }}>
           {guesses.map((row, ri) => (
@@ -626,16 +715,16 @@ function App() {
             </div>
           ))}
         </div>
-        <div style={{ padding: "24px 8px 40px", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+        <div style={{ padding: "24px 8px 12px", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
           {keyboard.map((row, ri) => (
             <div key={ri} style={{ display: "flex", gap: 4 }}>
               {row.map((key) => {
-                const k = kc[key]; const wide = key==="Enter"||key==="Del";
+                const wide = key==="Enter"||key==="Del";
                 return (
                   <button key={key} style={{
                     width: wide?56:34, height: 44, borderRadius: 6,
-                    background: k ? (k==="correct"?t.green:k==="present"?t.amber:(darkMode?"#333":"#D0D0D0")) : (darkMode?"#2A2A2A":"#E5E5E5"),
-                    border: "none", cursor: "pointer", ...f(600, wide?10:14), color: k?"#FFF":t.text,
+                    background: darkMode?"#2A2A2A":"#E5E5E5",
+                    border: "none", cursor: "pointer", ...f(600, wide?10:14), color: t.text,
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}>{key}</button>
                 );
@@ -643,24 +732,26 @@ function App() {
             </div>
           ))}
         </div>
+        <TriviaBox />
+        <SpotifyInvite />
       </Shell>
     );
   }
 
   // ═════════════════════════════════════════════
-  // MINI
+  // MINI (empty state)
   // ═════════════════════════════════════════════
   if (screen === SCREENS.MINI) {
-    const grid = [["M","I","L","E","S"],["O"," ","A"," ","W"],["N","O","T","E","S"],["K"," ","I"," ","E"],["B","L","N","D","T"]];
+    const grid = [["","","","",""],["","","","",""],["","","","",""],["","","","",""],["","","","",""]];
     const blacks = [[1,1],[1,3],[3,1],[3,3]];
     const isBlack = (r,c) => blacks.some(([a,b])=>a===r&&b===c);
     return (
       <Shell title="Mini" showBack>
         <div style={{ textAlign: "center", padding: "12px 20px 4px" }}>
-          <span style={{ ...f(400, 11), color: t.muted }}>Puzzle #42 — {dateStr} — {genre}</span>
+          <span style={{ ...f(400, 11), color: t.muted }}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span>
         </div>
         <div style={{ textAlign: "center", padding: "4px 20px 12px" }}>
-          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>0:47</span>
+          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>0:00</span>
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 16, padding: "0 20px 12px" }}>
           {["Clues","Check","Reveal","Clear"].map((b) => (
@@ -682,7 +773,6 @@ function App() {
                     display: "flex", alignItems: "center", justifyContent: "center",
                     ...f(600, 20), color: active?t.pillText:t.text, position: "relative",
                   }}>
-                    {!black && cell !== " " && cell}
                     {ri===0 && ci===0 && <span style={{ position:"absolute", top:2, left:4, ...f(400,8), color: active?`${t.pillText}B3`:t.muted }}>1</span>}
                   </div>
                 );
@@ -695,45 +785,43 @@ function App() {
           <span style={{ ...f(400, 13), color: t.text }}>1A: Jazz trumpet legend Davis</span>
           <IconChevron color={t.muted} size={16} dir="right" />
         </div>
-        <div style={{ padding: "0 20px 40px" }}>
+        <div style={{ padding: "0 20px 0" }}>
           <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Across</div>
-          {["1A: Jazz trumpet legend Davis","3A: Musical sounds","5A: ___ spot (jazz club)"].map((c,i) =>
-            <div key={i} style={{ ...f(400, 13), color: t.text, padding: "6px 0", borderBottom: `1px solid ${t.divider}` }}>{c}</div>
-          )}
+          {[
+            { clue: "1A: Jazz trumpet legend Davis", hint: "First name Miles" },
+            { clue: "3A: Musical sounds", hint: "Written on a staff" },
+            { clue: "5A: ___ spot (jazz club)", hint: "The opposite of cold" },
+          ].map((c,i) => <ClueRow key={i} clue={c.clue} hint={c.hint} />)}
         </div>
+        <TriviaBox />
+        <SpotifyInvite />
       </Shell>
     );
   }
 
   // ═════════════════════════════════════════════
-  // GROOVE
+  // GROOVE (empty state)
   // ═════════════════════════════════════════════
   if (screen === SCREENS.GROOVE) {
     const SIZE = 8;
     const letters = "COLTRANEDSAXBASSRIFFMONKDRUMSETCOMPGROOVEJZ".padEnd(SIZE*SIZE,"A").split("");
-    const found = ["COLTRANE","SAX"];
     const words = ["COLTRANE","SAX","MONK","BASS","DRUMS","RIFF","COMP","GROOVE"];
     return (
       <Shell title="Groove" showBack>
         <div style={{ textAlign: "center", padding: "12px 20px 4px" }}>
-          <span style={{ ...f(400, 11), color: t.muted }}>Find 8 words — Puzzle #42 — {genre}</span>
+          <span style={{ ...f(400, 11), color: t.muted }}>Find 8 words — Puzzle #42 — {genre} — {difficulty}</span>
         </div>
         <div style={{ textAlign: "center", padding: "4px 20px 12px" }}>
-          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>3:12</span>
+          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>0:00</span>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", padding: "0 20px 14px" }}>
-          {words.map((w) => {
-            const f2 = found.includes(w);
-            return (
-              <span key={w} style={{
-                padding: "4px 10px", borderRadius: 6,
-                background: f2 ? t.greenSoft : t.accentSoft,
-                border: `1px solid ${f2 ? t.green : t.accentBorder}`,
-                ...f(600, 11), color: f2 ? t.green : t.accent,
-                textDecoration: f2 ? "line-through" : "none", opacity: f2 ? 0.5 : 1,
-              }}>{w}</span>
-            );
-          })}
+          {words.map((w) => (
+            <span key={w} style={{
+              padding: "4px 10px", borderRadius: 6,
+              background: t.accentSoft, border: `1px solid ${t.accentBorder}`,
+              ...f(600, 11), color: t.accent,
+            }}>{w}</span>
+          ))}
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "0 12px" }}>
           {Array.from({length:SIZE},(_,ri)=>(
@@ -749,38 +837,137 @@ function App() {
             </div>
           ))}
         </div>
-        <div style={{ height: 40 }} />
+        <div style={{ height: 14 }} />
+        <TriviaBox />
+        <SpotifyInvite />
       </Shell>
     );
   }
 
   // ═════════════════════════════════════════════
-  // STATS
+  // STATS — rich, genre/game breakdown
   // ═════════════════════════════════════════════
   if (screen === SCREENS.STATS) {
-    const stats = [{l:"Played",v:"87",c:t.accent},{l:"Win %",v:"94",c:t.green},{l:"Streak",v:"12",c:t.amber},{l:"Max",v:"23",c:t.accent}];
-    const dist = [{g:1,n:2},{g:2,n:8},{g:3,n:12},{g:4,n:15},{g:5,n:7},{g:6,n:3}];
+    const [statsGenre, setStatsGenre] = useState("All");
+    const [statsGame, setStatsGame] = useState("All");
+
+    // Mock data per genre+game
+    const overallStats = { played: 87, winRate: 94, streak: 12, bestStreak: 23, avgTime: "3:42" };
+
+    const gameStats = {
+      Crosswords: { played: 32, winRate: 97, avgTime: "12:18", bestTime: "8:45", streak: 8 },
+      Solo: { played: 24, winRate: 88, avgTime: "2:36", bestTime: "1:12", streak: 5 },
+      Mini: { played: 18, winRate: 100, avgTime: "1:24", bestTime: "0:38", streak: 18 },
+      Groove: { played: 13, winRate: 92, avgTime: "4:15", bestTime: "2:50", streak: 4 },
+    };
+
+    const genreBreakdown = {
+      Jazz: { played: 42, winRate: 95 },
+      Rock: { played: 28, winRate: 93 },
+      "Pop Culture": { played: 17, winRate: 94 },
+    };
+
+    // Solo guess distribution
+    const dist = [{g:1,n:1},{g:2,n:4},{g:3,n:7},{g:4,n:6},{g:5,n:4},{g:6,n:2}];
     const mx = Math.max(...dist.map(d=>d.n));
+
     return (
       <Shell title="Stats" showBack>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "20px 20px 0" }}>
-          {stats.map((s) => (
-            <div key={s.l} style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14, padding: "16px", textAlign: "center", boxShadow: t.cardShadow }}>
-              <div style={{ ...f(400, 10), color: t.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>{s.l}</div>
-              <div style={{ ...f(700, 28), color: s.c, lineHeight: 1.1 }}>{s.v}</div>
+        {/* Summary cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "16px 20px 0" }}>
+          {[
+            {l:"Played", v: overallStats.played, c: t.accent},
+            {l:"Win %", v: overallStats.winRate, c: t.green},
+            {l:"Streak", v: overallStats.streak, c: t.amber},
+          ].map((s) => (
+            <div key={s.l} style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14, padding: "14px 8px", textAlign: "center", boxShadow: t.cardShadow }}>
+              <div style={{ ...f(700, 26), color: s.c, lineHeight: 1.1 }}>{s.v}</div>
+              <div style={{ ...f(400, 10), color: t.muted, letterSpacing: "0.05em", textTransform: "uppercase", marginTop: 4 }}>{s.l}</div>
             </div>
           ))}
         </div>
-        <div style={{ padding: "24px 20px 0" }}>
-          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14 }}>Guess Distribution</div>
+
+        {/* Best streak + avg time row */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "8px 20px 0" }}>
+          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14, padding: "12px 14px", boxShadow: t.cardShadow, display: "flex", alignItems: "center", gap: 10 }}>
+            <IconTrophy color={t.accent} size={18} />
+            <div>
+              <div style={{ ...f(700, 18), color: t.accent, lineHeight: 1 }}>{overallStats.bestStreak}</div>
+              <div style={{ ...f(400, 10), color: t.muted, marginTop: 2 }}>Best Streak</div>
+            </div>
+          </div>
+          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14, padding: "12px 14px", boxShadow: t.cardShadow, display: "flex", alignItems: "center", gap: 10 }}>
+            <IconClock color={t.accent} size={18} />
+            <div>
+              <div style={{ ...f(700, 18), color: t.accent, lineHeight: 1 }}>{overallStats.avgTime}</div>
+              <div style={{ ...f(400, 10), color: t.muted, marginTop: 2 }}>Avg. Time</div>
+            </div>
+          </div>
+        </div>
+
+        {/* By Game */}
+        <div style={{ padding: "20px 20px 0" }}>
+          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>By Game</div>
+          {Object.entries(gameStats).map(([name, gs]) => (
+            <div key={name} style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "12px 14px", marginBottom: 8, boxShadow: t.cardShadow }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <span style={{ ...f(600, 14), color: t.text }}>{name}</span>
+                <span style={{ ...f(400, 11), color: t.muted }}>{gs.played} played</span>
+              </div>
+              <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ ...f(400, 10), color: t.muted, marginBottom: 2 }}>Win %</div>
+                  <div style={{ height: 4, background: t.progressTrack, borderRadius: 4, overflow: "hidden" }}>
+                    <div style={{ width: `${gs.winRate}%`, height: "100%", background: t.green, borderRadius: 4 }} />
+                  </div>
+                  <div style={{ ...f(600, 11), color: t.green, marginTop: 2 }}>{gs.winRate}%</div>
+                </div>
+                <div style={{ textAlign: "center", minWidth: 50 }}>
+                  <div style={{ ...f(400, 10), color: t.muted, marginBottom: 2 }}>Avg</div>
+                  <div style={{ ...f(600, 13), color: t.textSecondary }}>{gs.avgTime}</div>
+                </div>
+                <div style={{ textAlign: "center", minWidth: 50 }}>
+                  <div style={{ ...f(400, 10), color: t.muted, marginBottom: 2 }}>Best</div>
+                  <div style={{ ...f(600, 13), color: t.accent }}>{gs.bestTime}</div>
+                </div>
+                <div style={{ textAlign: "center", minWidth: 40 }}>
+                  <div style={{ ...f(400, 10), color: t.muted, marginBottom: 2 }}>Streak</div>
+                  <div style={{ ...f(600, 13), color: t.amber }}>{gs.streak}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* By Genre */}
+        <div style={{ padding: "12px 20px 0" }}>
+          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>By Genre</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {Object.entries(genreBreakdown).map(([gName, gd]) => (
+              <div key={gName} style={{ flex: 1, background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "12px 10px", textAlign: "center", boxShadow: t.cardShadow }}>
+                <div style={{ ...f(600, 12), color: t.accent, marginBottom: 6 }}>{gName}</div>
+                <div style={{ ...f(700, 20), color: t.text, lineHeight: 1 }}>{gd.played}</div>
+                <div style={{ ...f(400, 10), color: t.muted, marginTop: 2 }}>played</div>
+                <div style={{ height: 3, background: t.progressTrack, borderRadius: 3, overflow: "hidden", marginTop: 8 }}>
+                  <div style={{ width: `${gd.winRate}%`, height: "100%", background: t.green, borderRadius: 3 }} />
+                </div>
+                <div style={{ ...f(500, 10), color: t.green, marginTop: 4 }}>{gd.winRate}% win</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Solo Guess Distribution */}
+        <div style={{ padding: "20px 20px 0" }}>
+          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12 }}>Solo — Guess Distribution</div>
           {dist.map((d) => (
-            <div key={d.g} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <div key={d.g} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
               <span style={{ ...f(500, 13), color: t.textSecondary, width: 14, textAlign: "right" }}>{d.g}</span>
-              <div style={{ flex: 1, height: 30, background: t.cardBg, borderRadius: 8, border: `1px solid ${t.cardBorder}`, overflow: "hidden" }}>
+              <div style={{ flex: 1, height: 28, background: t.cardBg, borderRadius: 7, border: `1px solid ${t.cardBorder}`, overflow: "hidden" }}>
                 <div style={{
                   width: `${Math.max((d.n/mx)*100, 10)}%`, height: "100%",
                   background: d.n===mx ? t.gradientBtn : t.accentSoft,
-                  borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 8,
+                  borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 8,
                 }}>
                   <span style={{ ...f(600, 11), color: d.n===mx ? t.pillText : t.accent }}>{d.n}</span>
                 </div>
@@ -788,7 +975,30 @@ function App() {
             </div>
           ))}
         </div>
-        <div style={{ padding: "24px 20px" }}>
+
+        {/* Completion time breakdown */}
+        <div style={{ padding: "20px 20px 0" }}>
+          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Completion Times</div>
+          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "14px", boxShadow: t.cardShadow }}>
+            {[
+              { label: "Fastest Crossword", value: "8:45", genre: "Jazz" },
+              { label: "Fastest Mini", value: "0:38", genre: "Rock" },
+              { label: "Fastest Solo", value: "1:12", genre: "Jazz" },
+              { label: "Fastest Groove", value: "2:50", genre: "Pop Culture" },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: i < 3 ? `1px solid ${t.divider}` : "none" }}>
+                <span style={{ ...f(400, 13), color: t.text }}>{item.label}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ ...f(400, 10), color: t.muted, padding: "2px 6px", background: t.accentSoft, borderRadius: 4 }}>{item.genre}</span>
+                  <span style={{ ...f(600, 13), color: t.accent }}>{item.value}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Badges */}
+        <div style={{ padding: "20px 20px" }}>
           <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12 }}>Badges</div>
           <div style={{ display: "flex", gap: 10 }}>
             {[{n:"First Riff",e:true},{n:"Week Streak",e:true},{n:"Jazz Head",e:false},{n:"Speed Run",e:false}].map((b) => (
@@ -804,7 +1014,8 @@ function App() {
             ))}
           </div>
         </div>
-        <div style={{ padding: "0 20px" }}>
+
+        <div style={{ padding: "0 20px 20px" }}>
           <button onClick={() => navigate(SCREENS.SHARE)} style={{
             width: "100%", padding: "13px", borderRadius: 12,
             background: t.gradientBtn, border: "none",
@@ -819,24 +1030,17 @@ function App() {
   // SHARE
   // ═════════════════════════════════════════════
   if (screen === SCREENS.SHARE) {
-    const grid = [[1,1,1,1,1],[0,0,1,0,2],[1,1,1,1,1]];
+    const grid = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
     return (
       <Shell title="" showBack>
         <div style={{ margin: "20px", background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 18, padding: "28px 20px", textAlign: "center", boxShadow: t.cardShadow }}>
-          <div style={{ ...f(700, 28), marginBottom: 4, background: t.gradient, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Riff Solo</div>
-          <div style={{ ...f(400, 12), color: t.muted, marginBottom: 16 }}>Puzzle #42 — {dateStr}</div>
-          <div style={{ ...f(400, 14), color: t.textSecondary, marginBottom: 4 }}>Solved in</div>
-          <div style={{ ...f(700, 36), color: t.green, marginBottom: 4 }}>3/6</div>
-          <div style={{ ...f(400, 12), color: t.muted, marginBottom: 20 }}>1:24</div>
-          <div style={{ display: "inline-flex", flexDirection: "column", gap: 3, marginBottom: 20 }}>
-            {grid.map((row,ri)=>(
-              <div key={ri} style={{ display: "flex", gap: 3, justifyContent: "center" }}>
-                {row.map((c,ci)=>(
-                  <div key={ci} style={{ width: 28, height: 28, borderRadius: 4, background: c===1?t.green:c===2?t.amber:(darkMode?"#333":"#D0D0D0") }} />
-                ))}
-              </div>
-            ))}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 4 }}>
+            <IconNote color={t.accent} size={18} />
+            <span style={{ ...f(700, 28), background: t.gradient, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Riff Solo</span>
           </div>
+          <div style={{ ...f(400, 12), color: t.muted, marginBottom: 16 }}>Puzzle #42 — {dateStr}</div>
+          <div style={{ ...f(400, 14), color: t.textSecondary, marginBottom: 4 }}>Not yet solved</div>
+          <div style={{ ...f(700, 36), color: t.muted, marginBottom: 20 }}>—/6</div>
           <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
             {["Copy","WhatsApp","X"].map((b) => (
               <button key={b} style={{
@@ -866,7 +1070,10 @@ function App() {
   if (screen === SCREENS.AUTH) return (
     <Shell title="" showBack>
       <div style={{ padding: "40px 24px", textAlign: "center" }}>
-        <h1 style={{ ...f(700, 38), margin: "0 0 6px", lineHeight: 1, background: t.gradient, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Riff</h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 6 }}>
+          <IconNote color={t.accent} size={20} />
+          <h1 style={{ ...f(700, 38), margin: 0, lineHeight: 1, background: t.gradient, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Riff</h1>
+        </div>
         <p style={{ ...f(400, 13), color: t.muted, marginBottom: 32 }}>Sign in to save your stats and streaks</p>
         <input type="email" placeholder="Email address" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: t.inputBg, border: `1px solid ${t.inputBorder}`, ...f(400, 14), color: t.text, outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
         <button style={{ width: "100%", padding: "13px", borderRadius: 12, background: t.gradientBtn, border: "none", ...f(600, 14), color: t.pillText, cursor: "pointer", marginBottom: 20 }}>Continue with email</button>
@@ -883,42 +1090,14 @@ function App() {
   );
 
   // ═════════════════════════════════════════════
-  // PAYWALL
-  // ═════════════════════════════════════════════
-  if (screen === SCREENS.PAYWALL) return (
-    <Shell title="Subscribe" showBack>
-      <div style={{ padding: "24px 20px" }}>
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <h2 style={{ ...f(700, 24), color: t.text, margin: "0 0 6px" }}>Unlock Premium</h2>
-          <p style={{ ...f(400, 13), color: t.muted }}>Solo, Mini, and the full Back Catalog</p>
-        </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 2, background: t.pillBg, borderRadius: 12, padding: 3, border: `1px solid ${t.divider}`, marginBottom: 24 }}>
-          <button style={{ flex: 1, padding: "10px", borderRadius: 10, background: t.pillActive, border: "none", ...f(600, 13), color: t.pillText, cursor: "pointer" }}>Annual — $30/yr</button>
-          <button style={{ flex: 1, padding: "10px", borderRadius: 10, background: "transparent", border: "none", ...f(400, 13), color: t.muted, cursor: "pointer" }}>Monthly — $3/mo</button>
-        </div>
-        {["Solo — guess the word in 6 tries","Mini — 5×5 quick crosswords","Back Catalog — every past puzzle","All difficulty levels","Ad-free experience"].map((feat) => (
-          <div key={feat} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: `1px solid ${t.divider}` }}>
-            <div style={{ width: 24, height: 24, borderRadius: 12, background: t.greenSoft, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <IconCheck color={t.green} size={13} />
-            </div>
-            <span style={{ ...f(400, 14), color: t.text }}>{feat}</span>
-          </div>
-        ))}
-        <button style={{ width: "100%", padding: "14px", borderRadius: 14, background: t.gradientBtn, border: "none", marginTop: 24, ...f(600, 15), color: t.pillText, cursor: "pointer" }}>Start free trial — 3 days</button>
-        <p style={{ ...f(400, 11), color: t.muted, textAlign: "center", marginTop: 10 }}>Cancel anytime. Billed after trial ends.</p>
-      </div>
-    </Shell>
-  );
-
-  // ═════════════════════════════════════════════
   // HOW TO PLAY
   // ═════════════════════════════════════════════
   if (screen === SCREENS.HOW_TO_PLAY) {
     const sections = [
       { title: "Crosswords", body: "A full-size themed crossword grid. Fill in all the white squares using across and down clues. Every answer connects to your chosen genre." },
       { title: "Groove", body: "A word search grid hiding 8 music-related words. Swipe or tap to select letters in any direction. Find all 8 to complete the puzzle." },
-      { title: "Solo", body: "Guess the 5-letter music word in 6 tries. Green = right letter, right spot. Yellow = right letter, wrong spot. Gray = not in the word. Premium." },
-      { title: "Mini", body: "A 5×5 crossword themed around your chosen genre. Fastest solvers hit the leaderboard. Premium." },
+      { title: "Solo", body: "Guess the 5-letter music word in 6 tries. Green = right letter, right spot. Yellow = right letter, wrong spot. Gray = not in the word. Use the Hint button on clues for extra help." },
+      { title: "Mini", body: "A 5x5 crossword themed around your chosen genre. Fastest solvers hit the leaderboard. Tap Hint on any clue if you get stuck." },
     ];
     return (
       <Shell title="How to Play" showBack>
@@ -951,11 +1130,11 @@ function App() {
             </div>
           ))}
         </div>
-        {[{l:"Settings",g:SCREENS.SETTINGS},{l:"Subscribe",g:SCREENS.PAYWALL},{l:"Sign in",g:SCREENS.AUTH}].map((item) => (
+        {[{l:"Settings",g:SCREENS.SETTINGS},{l:"Sign in",g:SCREENS.AUTH}].map((item) => (
           <button key={item.l} onClick={() => navigate(item.g)} style={{
             width: "100%", padding: "13px 16px", borderRadius: 12, marginBottom: 8,
             background: t.cardBg, border: `1px solid ${t.cardBorder}`,
-            ...f(500, 14), color: item.l==="Subscribe"?t.accent:t.text,
+            ...f(500, 14), color: t.text,
             cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: t.cardShadow,
           }}>
             <span>{item.l}</span><IconArrow color={t.muted} size={14} />
@@ -998,7 +1177,7 @@ function App() {
   }
 
   // ═════════════════════════════════════════════
-  // ARCHIVE
+  // ARCHIVE (Back Catalog — FREE)
   // ═════════════════════════════════════════════
   if (screen === SCREENS.ARCHIVE) {
     const daysInMonth = 30;
