@@ -22,15 +22,16 @@
   .tooltip-wrap { position: relative; }
   .tooltip-wrap .tooltip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; padding: 6px 12px; border-radius: 8px; white-space: nowrap; z-index: 99; pointer-events: none; font-size: 11px; font-weight: 400; }
   .tooltip-wrap:hover .tooltip { display: block; }
-  .dropdown-menu { position: absolute; top: 100%; left: 0; margin-top: 4px; background: inherit; border: 1px solid; border-radius: 8px; z-index: 200; min-width: 140px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-  .dropdown-item { padding: 10px 12px; cursor: pointer; font-size: 13px; border: none; background: none; width: 100%; text-align: left; transition: background 0.2s; }
-  .dropdown-item:hover { opacity: 0.8; }
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
+
+// ═══════════════════════════════════════════════════════════════
+// RIFF WORD GAMES — Interactive App v2
+// ═══════════════════════════════════════════════════════════════
 
 const GENRE_THEMES = {
   Jazz: {
@@ -119,14 +120,7 @@ const GENRE_THEMES = {
   },
 };
 
-const COLOR_PALETTES = {
-  Default: null,
-  "Cal Poly Green": "#1E4D2B",
-  "Blooma": "#E89BB5",
-  "Gridline Supply": "#2DD4BF",
-  "Zaphiraé": "#3B82F6",
-};
-
+// ── SVG Icons ──
 const I = {
   Note: ({c,s=18}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3" fill={c} opacity=".3" stroke={c}/><circle cx="18" cy="16" r="3" fill={c} opacity=".3" stroke={c}/></svg>,
   Cross: ({c,s=22}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.4"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="2" y1="8.67" x2="22" y2="8.67"/><line x1="2" y1="15.33" x2="22" y2="15.33"/><line x1="8.67" y1="2" x2="8.67" y2="22"/><line x1="15.33" y1="2" x2="15.33" y2="22"/><rect x="15.33" y="2" width="6.67" height="6.67" fill={c} opacity=".12"/><rect x="2" y="15.33" width="6.67" height="6.67" fill={c} opacity=".12"/></svg>,
@@ -149,79 +143,29 @@ const I = {
   Trophy: ({c,s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2"/><path d="M18 9h2a2 2 0 002-2V5a2 2 0 00-2-2h-2"/><path d="M6 3h12v7a6 6 0 01-12 0V3z"/><path d="M9 21h6"/><path d="M12 16v5"/></svg>,
   Clock: ({c,s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
   Spotify: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>,
-  Refresh: ({c,s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64M2.51 15A9 9 0 0 0 18.36 18.36"/></svg>,
-  Palette: ({c,s=18}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="8" cy="9" r="2" fill={c}/><circle cx="16" cy="9" r="2" fill={c}/><path d="M7 13c1 1 3 2 5 2s4-1 5-2"/></svg>,
 };
 
+// ── Trivia (different per screen) ──
 const TRIVIA = {
   Jazz: {
-    crosswords: [
-      "John Coltrane practiced for 12 hours a day, sometimes falling asleep with the saxophone still in his mouth.",
-      "Duke Ellington composed over 1,000 pieces during his 50+ year career.",
-      "Billie Holiday sang with such emotional intensity that she often recorded a whole song in just one take.",
-    ],
-    solo: [
-      "Miles Davis recorded 'Kind of Blue' in just two sessions at Columbia's 30th Street Studio in 1959.",
-      "Thelonious Monk was known for his unpredictable chord changes that confused even the best musicians.",
-      "Art Tatum could play in any key and made complicated jazz standards sound effortless.",
-    ],
-    mini: [
-      "Thelonious Monk would sometimes stand up from the piano mid-performance and dance in circles.",
-      "Oscar Peterson could play anything on the piano, from stride to bebop to ballads.",
-      "Herbie Hancock pioneered jazz fusion and digital synthesizers in the 1970s.",
-    ],
-    groove: [
-      "The word 'jazz' first appeared in print in 1912 in a Los Angeles newspaper as a baseball term.",
-      "Jazz musicians use a system called 'changes' to improvise, building on harmonic progressions.",
-      "The upright bass in jazz doesn't just keep time; it's a soloing instrument too.",
-    ],
+    crosswords: "John Coltrane practiced for 12 hours a day, sometimes falling asleep with the saxophone still in his mouth.",
+    solo: "Miles Davis recorded 'Kind of Blue' in just two sessions at Columbia's 30th Street Studio in 1959.",
+    mini: "Thelonious Monk would sometimes stand up from the piano mid-performance and dance in circles.",
+    groove: "The word 'jazz' first appeared in print in 1912 in a Los Angeles newspaper — as a baseball term.",
   },
   Rock: {
-    crosswords: [
-      "Led Zeppelin's 'Stairway to Heaven' was never released as a single, yet it's one of the most requested radio songs.",
-      "David Bowie changed his stage name to avoid confusion with Davy Jones of The Monkees.",
-      "AC/DC's Angus Young performs with such energy that he sometimes tears his clothes on stage.",
-    ],
-    solo: [
-      "The Beatles hold the record for most number-one hits on the Billboard Hot 100 with 20 songs.",
-      "Queen's Freddie Mercury could hit four octaves and wrote some of rock's greatest hits.",
-      "Pink Floyd's Roger Waters wrote most of 'The Wall' during the band's toughest tour.",
-    ],
-    mini: [
-      "Jimi Hendrix was self-taught and couldn't read music. He played a right-handed guitar flipped upside down.",
-      "Joan Jett had to start her own record label because no one would sign her as a female rocker.",
-      "Kurt Cobain wrote 'Smells Like Teen Spirit' somewhat by accident, and it changed rock forever.",
-    ],
-    groove: [
-      "Pink Floyd's 'The Dark Side of the Moon' spent 937 weeks on the Billboard 200 chart.",
-      "The Rolling Stones' tongue logo was inspired by Hindu goddess imagery.",
-      "Black Sabbath tuned their guitars down to create a darker, heavier sound.",
-    ],
+    crosswords: "Led Zeppelin's 'Stairway to Heaven' was never released as a single, yet it's one of the most requested radio songs.",
+    solo: "The Beatles hold the record for most number-one hits on the Billboard Hot 100 with 20 songs.",
+    mini: "Jimi Hendrix was self-taught and couldn't read music. He played a right-handed guitar flipped upside down.",
+    groove: "Pink Floyd's 'The Dark Side of the Moon' spent 937 weeks on the Billboard 200 chart.",
   },
   "Pop Culture": {
-    crosswords: [
-      "Beyonce's 'Lemonade' was the first album to debut at #1 with all songs charting on the Hot 100.",
-      "The Weeknd has the most Billboard Hot 100 entries of any artist, breaking his own record repeatedly.",
-      "Lady Gaga wrote 'Poker Face' on a stranger's piano in the studio, creating a global phenomenon.",
-    ],
-    solo: [
-      "Taylor Swift is the only artist to have five albums sell over one million copies in their first week.",
-      "Ariana Grande can whistle notes higher than most singers can sing.",
-      "Dua Lipa's song 'Break My Heart' was inspired by her real heartbreak between albums.",
-    ],
-    mini: [
-      "Billie Eilish recorded her debut album entirely in her brother's small bedroom.",
-      "The Kardashians have launched 15+ fragrances, and Kim Kardashian's brand earned over $1 billion.",
-      "Miley Cyrus started her career as Hannah Montana on Disney Channel before going solo.",
-    ],
-    groove: [
-      "Drake holds the record for most songs to chart on the Billboard Hot 100 simultaneously, 27 songs.",
-      "Post Malone got his stage name from a random internet rap name generator.",
-      "Cardi B's 'Bodak Yellow' made her the first female rapper to debut at #1 on the Hot 100.",
-    ],
+    crosswords: "Beyonce's 'Lemonade' was the first album to debut at #1 with all songs charting on the Hot 100.",
+    solo: "Taylor Swift is the only artist to have five albums sell over one million copies in their first week.",
+    mini: "Billie Eilish recorded her debut album entirely in her brother's small bedroom.",
+    groove: "Drake holds the record for most songs to chart on the Billboard Hot 100 simultaneously — 27 songs.",
   },
 };
-
 const SPOTIFY = {
   Jazz: {name:"Jazz Essentials",desc:"Coltrane, Davis, Monk and more"},
   Rock: {name:"Classic Rock Legends",desc:"Zeppelin, Floyd, Hendrix and more"},
@@ -234,11 +178,13 @@ const DIFF_DESC = {
   Legendary:"No hints, deep genre knowledge required",
 };
 
+// ── Helpers ──
 const f = (w=400,s=14) => ({fontFamily:"'Spline Sans',-apple-system,BlinkMacSystemFont,sans-serif",fontWeight:w,fontSize:s,lineHeight:1.45});
 function getGreeting(){const h=new Date().getHours();if(h<6)return"Late night session";if(h<12)return"Morning warm-up";if(h<17)return"Afternoon jam";if(h<21)return"Evening set";return"Late night session";}
 
 const SCREENS = {HOME:"home",CROSSWORDS:"crosswords",SOLO:"solo",MINI:"mini",GROOVE:"groove",STATS:"stats",SHARE:"share",AUTH:"auth",PROFILE:"profile",SETTINGS:"settings",HOW:"how",ARCHIVE:"archive"};
 
+// ── CROSSWORD DATA ──
 const CW_GRID = [
   ["C","O","L","T","R","A","N"],
   ["H","#","E","#","I","#","O"],
@@ -252,46 +198,46 @@ const CW_NUMS = {0:{0:1,2:2},2:{0:3,1:4},4:{0:5,1:6},6:{0:7}};
 const CW_CLUES = {
   across:[
     {n:"1A",clue:"Legendary saxophonist John ___",hint:"His album 'A Love Supreme' changed jazz",ans:"COLTRAN"},
-    {n:"3A",clue:"Eight-note interval",hint:"Do-Re-Mi...",ans:"OCTAVE"},
-    {n:"5A",clue:"Two musicians performing together",hint:"Opposite of a solo",ans:"DUOIN"},
-    {n:"7A",clue:"Musical genre: smooth and rhythmic",hint:"What we love",ans:"JAZZING"},
+    {n:"3A",clue:"Musical interval of 8 notes",hint:"From C to next C",ans:"OCTAVE"},
+    {n:"5A",clue:"Two musicians playing together",hint:"Smaller than a trio",ans:"DUONRIS"},
+    {n:"7A",clue:"Improvising rhythmically",hint:"What a jazz musician does in the groove",ans:"JAZZING"},
   ],
   down:[
-    {n:"1D",clue:"Blue notes and improvisation",hint:"American musical art form",ans:"CHORDS"},
-    {n:"2D",clue:"Traditional string instrument",hint:"Classical ___",ans:"OBOES"},
-    {n:"4D",clue:"Steady beat in music",hint:"Keep ___",ans:"ATIME"},
-    {n:"6D",clue:"High female singing voice",hint:"Opposite of bass",ans:"OBOIST"},
-    {n:"7D",clue:"Group of musicians",hint:"Chamber ___",ans:"GILT"},
-  ]
+    {n:"1D",clue:"___ progression (music)",hint:"A sequence of harmonies",ans:"CHORDSJ"},
+    {n:"2D",clue:"Musical time division",hint:"Eight of these in a whole note",ans:"LETSONZ"},
+    {n:"4D",clue:"Performed without preparation",hint:"A jazz specialty",ans:"AANING"},
+  ],
 };
 
+// ── MINI DATA ──
 const MINI_GRID = [
-  ["B","L","U","E","S"],
-  ["E","#","A","#","U"],
-  ["A","T","O","N","E"],
-  ["T","#","D","#","C"],
-  ["S","O","N","G","S"],
+  ["M","I","L","E","S"],
+  ["O","#","A","#","W"],
+  ["N","O","T","E","S"],
+  ["K","#","I","#","E"],
+  ["B","L","N","D","T"],
 ];
+const MINI_NUMS = {0:{0:1},2:{0:2,1:3},4:{0:4,1:5}};
 const MINI_CLUES = {
   across:[
-    {n:"1A",clue:"Sad emotion (music style)",ans:"BLUES"},
-    {n:"3A",clue:"Nice sound quality",ans:"TONE"},
-    {n:"5A",clue:"Musical compositions",ans:"SONGS"},
+    {n:"1A",clue:"Jazz trumpet legend Davis",hint:"First name, not last",ans:"MILES"},
+    {n:"2A",clue:"Musical sounds",hint:"Written on a staff",ans:"NOTES"},
+    {n:"4A",clue:"Visually unclear",hint:"Opposite of sharp",ans:"BLNDT"},
   ],
   down:[
-    {n:"1D",clue:"Orchestra leader",ans:"BEATS"},
-    {n:"2D",clue:"To harmonize",ans:"TUNE"},
-    {n:"4D",clue:"Rapid drum sound",ans:"DUC"},
-  ]
+    {n:"1D",clue:"Thelonious ___",hint:"Jazz pianist, unique style",ans:"MONKB"},
+    {n:"3D",clue:"Like a musical line",hint:"Not rhythm, but ___",ans:"LATIN"},
+  ],
 };
 
-const SOLO_WORD = "IMPROVISE";
-const SOLO_CLUES = ["Make it up as you go","Play without a set plan","The heart of jazz","Every musician's superpower"];
-const SOLO_HINTS = ["I_____E","IM______E","IMPROV___"];
+// ── SOLO WORD ──
+const SOLO_WORD = "BLUES";
 
-const GROOVE_WORDS = ["JAZZ","ROCK","BEAT","GROOVE","FLOW","NOTE","CHORD","RIFF","SOLO","TEMPO"];
-const GROOVE_CLUE = "Find 10 musical words!";
+// ── GROOVE WORDS ──
+const GROOVE_LETTERS = "COLTRANEDSAXBASSRIFFMONKDRUMSETCOMPGROOVEJZ".padEnd(64,"A").split("");
+const GROOVE_WORDS = ["COLTRANE","SAX","MONK","BASS","DRUMS","RIFF","COMP","GROOVE"];
 
+// ═══════ MAIN APP ═══════
 function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [screen, setScreen] = useState(SCREENS.HOME);
@@ -299,626 +245,856 @@ function App() {
   const [difficulty, setDifficulty] = useState("Beginner");
   const [history, setHistory] = useState([]);
 
-  const [cwTimerSec, setCwTimerSec] = useState(0);
-  const [soloTimerSec, setSoloTimerSec] = useState(0);
-  const [miniTimerSec, setMiniTimerSec] = useState(0);
-  const [grooveTimerSec, setGrooveTimerSec] = useState(0);
-  const [activeGame, setActiveGame] = useState(null);
+  // Timer
+  const [timerSec, setTimerSec] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+  const timerRef = useRef(null);
+  useEffect(() => {
+    if (timerRunning) {
+      timerRef.current = setInterval(() => setTimerSec(s => s + 1), 1000);
+    } else { clearInterval(timerRef.current); }
+    return () => clearInterval(timerRef.current);
+  }, [timerRunning]);
+  const fmtTime = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
 
-  const [colorOverride, setColorOverride] = useState(null);
-
-  const [cwTriviaIdx, setCwTriviaIdx] = useState(0);
-  const [soloTriviaIdx, setSoloTriviaIdx] = useState(0);
-  const [miniTriviaIdx, setMiniTriviaIdx] = useState(0);
-  const [grooveTriviaIdx, setGrooveTriviaIdx] = useState(0);
-
+  // Crossword state
   const [cwCells, setCwCells] = useState(() => CW_GRID.map(r => r.map(c => c === "#" ? "#" : "")));
   const [cwActive, setCwActive] = useState([0,0]);
   const [cwDir, setCwDir] = useState("across");
   const [cwRevealed, setCwRevealed] = useState(false);
-  const [cwDropdownOpen, setCwDropdownOpen] = useState(null);
 
+  // Mini state
   const [miniCells, setMiniCells] = useState(() => MINI_GRID.map(r => r.map(c => c === "#" ? "#" : "")));
   const [miniActive, setMiniActive] = useState([0,0]);
   const [miniDir, setMiniDir] = useState("across");
-  const [miniDropdownOpen, setMiniDropdownOpen] = useState(null);
 
+  // Solo state
   const [soloGuesses, setSoloGuesses] = useState([]);
   const [soloCurrent, setSoloCurrent] = useState("");
   const [soloGameOver, setSoloGameOver] = useState(false);
 
+  // Groove state
   const [grooveSelected, setGrooveSelected] = useState([]);
   const [grooveFound, setGrooveFound] = useState([]);
   const [grooveWrong, setGrooveWrong] = useState(false);
 
+  // Stats page state (must be at top level for hooks rules)
   const [statsTab, setStatsTab] = useState("overview");
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
-  const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-  let t = {...baseTheme};
-  if (colorOverride && colorOverride !== "Default") {
-    const overrideColor = COLOR_PALETTES[colorOverride];
-    if (overrideColor) {
-      t.accent = overrideColor;
-      t.accentHover = overrideColor;
-      t.accentSoft = overrideColor + "20";
-      t.accentBorder = overrideColor + "40";
-      t.gradient = `linear-gradient(135deg,${overrideColor} 0%,${overrideColor} 100%)`;
-      t.gradientBtn = `linear-gradient(135deg,${overrideColor} 0%,${overrideColor} 100%)`;
-    }
-  }
-
-  useEffect(() => {
-    if (!timerRunning) return;
-    const interval = setInterval(() => {
-      if (activeGame === "crosswords") setCwTimerSec(s => s + 1);
-      else if (activeGame === "solo") setSoloTimerSec(s => s + 1);
-      else if (activeGame === "mini") setMiniTimerSec(s => s + 1);
-      else if (activeGame === "groove") setGrooveTimerSec(s => s + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timerRunning, activeGame]);
-
-  const startGame = (gameName) => {
-    setHistory(h => [...h, screen]);
-    setScreen(gameName);
-    setActiveGame(gameName);
-    setTimerRunning(true);
+  const navigate = (s) => {
+    setHistory(prev => [...prev, screen]);
+    setScreen(s);
+    // Start timer when entering a game
+    if (["crosswords","solo","mini","groove"].includes(s)) {
+      setTimerSec(0); setTimerRunning(true);
+    } else { setTimerRunning(false); }
   };
-
   const goBack = () => {
-    if (history.length > 0) {
-      const prev = history[history.length - 1];
-      setHistory(h => h.slice(0, -1));
-      setScreen(prev);
-      setTimerRunning(false);
-      setActiveGame(null);
-    }
+    const prev = history.length > 0 ? history[history.length - 1] : SCREENS.HOME;
+    setHistory(h => h.slice(0, -1));
+    setScreen(prev);
+    setTimerRunning(false);
   };
 
-  if (screen === SCREENS.HOME) return (
+  const t = darkMode ? GENRE_THEMES[genre].dark : GENRE_THEMES[genre].light;
+  const today = new Date();
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const dateStr = `${days[today.getDay()]}, ${months[today.getMonth()]} ${today.getDate()}`;
+  const genreLabel = `Riff ${genre}`;
+
+  const games = [
+    {id:"crosswords",name:"Crosswords",desc:"Full themed crossword",icon:I.Cross,time:"~15 min",scr:SCREENS.CROSSWORDS},
+    {id:"groove",name:"Groove",desc:"Find 8 hidden words",icon:I.Wave,time:"~5 min",scr:SCREENS.GROOVE},
+    {id:"solo",name:"Solo",desc:"Guess the word in 6 tries",icon:I.Tile,time:"~3 min",scr:SCREENS.SOLO},
+    {id:"mini",name:"Mini",desc:"5x5 quick crossword",icon:I.Grid,time:"~2 min",scr:SCREENS.MINI},
+  ];
+
+  // ── Bottom Nav (all pages except home) ──
+  const BottomNav = () => (
+    <div style={{position:"fixed",bottom:0,left:0,right:0,background:t.navBg,borderTop:`1px solid ${t.navBorder}`,display:"flex",justifyContent:"center",zIndex:100}}>
+      <div style={{display:"flex",maxWidth:420,width:"100%",justifyContent:"space-around",padding:"8px 0 12px"}}>
+        {[
+          {icon:I.Home,label:"Home",scr:SCREENS.HOME},
+          {icon:I.Bar,label:"Stats",scr:SCREENS.STATS},
+          {icon:I.Cal,label:"Archive",scr:SCREENS.ARCHIVE},
+          {icon:I.User,label:"Profile",scr:SCREENS.PROFILE},
+        ].map(item => {
+          const active = screen === item.scr;
+          return (
+            <button key={item.label} onClick={() => {setHistory(h=>[...h,screen]);setScreen(item.scr);setTimerRunning(false);}} style={{
+              background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"4px 12px",
+            }}>
+              <item.icon c={active ? t.accent : t.muted} s={20} />
+              <span style={{...f(active?600:400,9),color:active?t.accent:t.muted}}>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  // ── Shell wrapper ──
+  const Shell = ({children,title,showBack=true}) => (
     <div style={{minHeight:"100vh",background:t.bg,transition:"background 0.35s ease",...f()}}>
       <div style={{maxWidth:420,margin:"0 auto",paddingBottom:70}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px"}}>
-          <I.Note c={t.accent} s={24} />
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={() => setDarkMode(!darkMode)} style={{background:"none",border:"none",padding:4,display:"flex",cursor:"pointer"}}>
-              {darkMode ? <I.Sun c={t.muted} s={18} /> : <I.Moon c={t.muted} s={18} />}
-            </button>
-            <div style={{position:"relative"}}>
-              <button onClick={() => setColorPickerOpen(!colorPickerOpen)} style={{background:"none",border:"none",padding:4,display:"flex",cursor:"pointer"}}>
-                <I.Palette c={t.muted} s={18} />
-              </button>
-              {colorPickerOpen && (
-                <div style={{position:"absolute",top:40,right:0,background:t.surface,border:`1px solid ${t.divider}`,borderRadius:8,padding:8,zIndex:200,minWidth:160,boxShadow:t.cardShadow}}>
-                  {Object.keys(COLOR_PALETTES).map(palName => (
-                    <button key={palName} onClick={() => {setColorOverride(palName);setColorPickerOpen(false);}} style={{
-                      display:"block",width:"100%",padding:"8px 12px",textAlign:"left",border:"none",background:colorOverride===palName?t.accentSoft:"transparent",color:t.text,cursor:"pointer",borderRadius:4,fontSize:12,fontWeight:colorOverride===palName?600:400,transition:"background 0.2s"
-                    }}>{palName}</button>
-                  ))}
-                </div>
-              )}
-            </div>
+        {showBack && (
+          <div style={{display:"flex",alignItems:"center",padding:"14px 20px 0",gap:8}}>
+            <button onClick={goBack} style={{background:"none",border:"none",padding:4,display:"flex"}}><I.Chev c={t.accent} s={22} dir="left"/></button>
+            {title && <span style={{...f(600,16),color:t.text}}>{title}</span>}
           </div>
-        </div>
-
-        <div style={{padding:"20px",textAlign:"center"}}>
-          <div style={{...f(600,20),color:t.text,marginBottom:4}}>{getGreeting()}</div>
-          <div style={{...f(400,13),color:t.textSecondary}}>Pick a puzzle and vibe to great music</div>
-        </div>
-
-        <div style={{display:"flex",gap:8,padding:"0 20px",marginBottom:24}}>
-          {["Jazz","Rock","Pop Culture"].map(g => {
-            const isActive = g === genre;
-            return (
-              <button key={g} onClick={() => setGenre(g)} style={{
-                flex:1,padding:"10px 12px",border:"none",borderRadius:8,cursor:"pointer",
-                background:isActive?t.accent:t.surface,color:isActive?t.text:"inherit",
-                ...f(isActive?600:500,12),transition:"all 0.3s ease"
-              }}>{g}</button>
-            );
-          })}
-        </div>
-
-        <div style={{padding:"0 20px",marginBottom:24}}>
-          <div style={{...f(500,11),color:t.muted,marginBottom:8}}>DIFFICULTY</div>
-          <div style={{display:"flex",gap:6}}>
-            {["Beginner","Standard","Expert","Legendary"].map(d => {
-              const isActive = d === difficulty;
-              return (
-                <button key={d} onClick={() => setDifficulty(d)} style={{
-                  flex:1,padding:"8px",border:`1px solid ${isActive?t.accent:t.divider}`,borderRadius:6,cursor:"pointer",
-                  background:isActive?t.accentSoft:"transparent",color:t.text,...f(isActive?600:400,11),transition:"all 0.2s"
-                }}>{d}</button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div style={{padding:"0 20px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:24}}>
-          {[
-            {icon:I.Cross,name:"Crosswords",scr:SCREENS.CROSSWORDS},
-            {icon:I.Grid,name:"Solo",scr:SCREENS.SOLO},
-            {icon:I.Tile,name:"Mini",scr:SCREENS.MINI},
-            {icon:I.Wave,name:"Groove",scr:SCREENS.GROOVE},
-          ].map(game => (
-            <button key={game.name} onClick={() => startGame(game.scr)} style={{
-              padding:"20px 12px",border:"none",borderRadius:12,background:t.surface,color:t.text,cursor:"pointer",
-              ...f(600,13),transition:"all 0.3s ease",display:"flex",flexDirection:"column",alignItems:"center",gap:8
-            }}>
-              <game.icon c={t.accent} s={24} />
-              {game.name}
-            </button>
-          ))}
-        </div>
-
-        <div style={{padding:"0 20px",marginBottom:24}}>
-          <div style={{background:t.surface,border:`1px solid ${t.divider}`,borderRadius:12,padding:16}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-              <I.Spotify />
-              <span style={{...f(500,12),color:t.text}}>Listen on Spotify</span>
-            </div>
-            <div style={{...f(400,11),color:t.textSecondary,marginBottom:12}}>
-              {SPOTIFY[genre].name}: {SPOTIFY[genre].desc}
-            </div>
-            <button style={{width:"100%",padding:"10px 12px",border:"none",borderRadius:8,background:t.accent,color:"#000",cursor:"pointer",...f(600,12),marginBottom:8}}>
-              Listen on Spotify
-            </button>
-            <button style={{width:"100%",padding:"10px 12px",border:"none",borderRadius:8,background:`linear-gradient(135deg, #FF1D8A, #FF0000)`,color:"#FFF",cursor:"pointer",...f(600,12)}}>
-              Listen on Apple Music
-            </button>
-          </div>
-        </div>
-
-        <div style={{padding:"0 20px"}}>
-          <div style={{background:t.surface,border:`1px solid ${t.divider}`,borderRadius:12,padding:12,textAlign:"center"}}>
-            <div style={{...f(600,12),color:t.text,marginBottom:4}}>24</div>
-            <div style={{...f(400,11),color:t.textSecondary}}>puzzles completed</div>
-          </div>
-        </div>
+        )}
+        {children}
       </div>
       <BottomNav />
     </div>
   );
 
-  if (screen === SCREENS.CROSSWORDS) return <CrosswordScreen goBack={goBack} genre={genre} difficulty={difficulty} darkMode={darkMode} cwCells={cwCells} setCwCells={setCwCells} cwActive={cwActive} setCwActive={setCwActive} cwDir={cwDir} setCwDir={setCwDir} cwRevealed={cwRevealed} setCwRevealed={setCwRevealed} cwDropdownOpen={cwDropdownOpen} setCwDropdownOpen={setCwDropdownOpen} cwTimerSec={cwTimerSec} timerRunning={timerRunning} setTimerRunning={setTimerRunning} colorOverride={colorOverride} cwTriviaIdx={cwTriviaIdx} setCwTriviaIdx={setCwTriviaIdx} />;
-
-  if (screen === SCREENS.SOLO) return <SoloScreen goBack={goBack} genre={genre} difficulty={difficulty} darkMode={darkMode} soloGuesses={soloGuesses} setSoloGuesses={setSoloGuesses} soloCurrent={soloCurrent} setSoloCurrent={setSoloCurrent} soloGameOver={soloGameOver} setSoloGameOver={setSoloGameOver} soloTimerSec={soloTimerSec} timerRunning={timerRunning} setTimerRunning={setTimerRunning} colorOverride={colorOverride} soloTriviaIdx={soloTriviaIdx} setSoloTriviaIdx={setSoloTriviaIdx} />;
-
-  if (screen === SCREENS.MINI) return <MiniScreen goBack={goBack} genre={genre} difficulty={difficulty} darkMode={darkMode} miniCells={miniCells} setMiniCells={setMiniCells} miniActive={miniActive} setMiniActive={setMiniActive} miniDir={miniDir} setMiniDir={setMiniDir} miniDropdownOpen={miniDropdownOpen} setMiniDropdownOpen={setMiniDropdownOpen} miniTimerSec={miniTimerSec} timerRunning={timerRunning} setTimerRunning={setTimerRunning} colorOverride={colorOverride} miniTriviaIdx={miniTriviaIdx} setMiniTriviaIdx={setMiniTriviaIdx} />;
-
-  if (screen === SCREENS.GROOVE) return <GrooveScreen goBack={goBack} genre={genre} difficulty={difficulty} darkMode={darkMode} grooveSelected={grooveSelected} setGrooveSelected={setGrooveSelected} grooveFound={grooveFound} setGrooveFound={setGrooveFound} grooveWrong={grooveWrong} setGrooveWrong={setGrooveWrong} grooveTimerSec={grooveTimerSec} timerRunning={timerRunning} setTimerRunning={setTimerRunning} colorOverride={colorOverride} grooveTriviaIdx={grooveTriviaIdx} setGrooveTriviaIdx={setGrooveTriviaIdx} />;
-
-  if (screen === SCREENS.STATS) return <StatsScreen goBack={goBack} statsTab={statsTab} setStatsTab={setStatsTab} genre={genre} difficulty={difficulty} darkMode={darkMode} colorOverride={colorOverride} />;
-
-  if (screen === SCREENS.ARCHIVE) return <ArchiveScreen goBack={goBack} genre={genre} difficulty={difficulty} darkMode={darkMode} colorOverride={colorOverride} />;
-
-  if (screen === SCREENS.PROFILE) return <ProfileScreen goBack={goBack} genre={genre} difficulty={difficulty} darkMode={darkMode} colorOverride={colorOverride} />;
-
-  // ── Reusable Components ──
-
-  function GameHeader({title}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let th = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) th.accent = overrideColor;
-    }
+  // ── Trivia Box ──
+  const TriviaBox = ({gameKey}) => {
+    const tri = (TRIVIA[genre] || TRIVIA.Jazz)[gameKey] || "Music trivia coming soon.";
     return (
-      <>
-        <div style={{display:"flex",alignItems:"center",padding:"14px 20px 0",gap:8}}>
-          <button onClick={goBack} style={{background:"none",border:"none",padding:4,display:"flex",cursor:"pointer"}}>
-            <I.Chev c={th.accent} s={22} dir="left"/>
-          </button>
-          {title && <span style={{...f(600,16),color:th.text}}>{title}</span>}
-        </div>
-        <div style={{display:"flex",gap:8,padding:"12px 20px 0",flexWrap:"wrap"}}>
-          <div style={{padding:"6px 12px",borderRadius:6,background:th.accentSoft,border:`1px solid ${th.accentBorder}`,color:th.text,...f(500,11)}}>
-            {genre}
-          </div>
-          <div style={{padding:"6px 12px",borderRadius:6,border:`1px solid ${th.accentBorder}`,color:th.text,...f(500,11)}}>
-            {difficulty}
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  function TriviaBox({gameType, triviaIdx, setTriviaIdx}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let th = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) th.accent = overrideColor;
-    }
-    const facts = TRIVIA[genre][gameType] || [];
-    const currentFact = facts[triviaIdx % facts.length];
-    return (
-      <div style={{background:th.surface,border:`1px solid ${th.divider}`,borderRadius:12,padding:12,marginBottom:16}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
-          <div style={{flex:1}}>
-            <div style={{...f(500,11),color:th.muted,marginBottom:4}}>Did You Know?</div>
-            <div style={{...f(400,12),color:th.text}}>{currentFact}</div>
-          </div>
-          <button onClick={() => setTriviaIdx(i => i + 1)} style={{background:"none",border:"none",padding:4,cursor:"pointer",display:"flex",minWidth:24,justifyContent:"center"}}>
-            <I.Refresh c={th.accent} s={16} />
-          </button>
-        </div>
+      <div style={{margin:"14px 20px",padding:"14px 16px",background:t.accentSoft,border:`1px solid ${t.accentBorder}`,borderRadius:12}}>
+        <div style={{...f(600,11),color:t.accent,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}>Did you know?</div>
+        <div style={{...f(400,13),color:t.text,lineHeight:1.5}}>{tri}</div>
       </div>
     );
-  }
+  };
 
-  function DropdownMenu({open, setOpen, items, position="left"}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let th = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) th.accent = overrideColor;
-    }
-    if (!open) return null;
+  // ── Spotify Invite ──
+  const SpotifyInvite = () => {
+    const pl = SPOTIFY[genre] || SPOTIFY.Jazz;
     return (
-      <div style={{position:"absolute",top:"100%",left:position==="left"?0:"auto",right:position==="right"?0:"auto",marginTop:4,background:th.surface,border:`1px solid ${th.divider}`,borderRadius:8,zIndex:200,minWidth:140,boxShadow:th.cardShadow}}>
-        {items.map((item, idx) => (
-          <button key={idx} onClick={() => {item.action();setOpen(false);}} style={{
-            display:"block",width:"100%",padding:"10px 12px",textAlign:"left",border:"none",background:"transparent",color:th.text,cursor:"pointer",borderRadius:0,fontSize:13,fontWeight:400,transition:"background 0.2s",borderBottom:idx<items.length-1?`1px solid ${th.divider}`:"none"
-          }} onMouseEnter={e => e.target.style.background = th.surfaceHover} onMouseLeave={e => e.target.style.background = "transparent"}>
-            {item.label}
-          </button>
-        ))}
+      <div style={{margin:"0 20px 20px",padding:"12px 16px",background:t.greenSoft,border:`1px solid ${t.green}40`,borderRadius:12,display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
+        <I.Play c={t.green} s={16}/>
+        <div style={{flex:1}}>
+          <div style={{...f(500,13),color:t.green}}>{pl.name}</div>
+          <div style={{...f(400,11),color:t.green,opacity:.7}}>{pl.desc}</div>
+        </div>
+        <I.Spotify />
       </div>
     );
-  }
+  };
 
-  function Shell({children,title,showBack=true}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let th = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) th.accent = overrideColor;
-    }
+  // ── Clue Row with info icon hint ──
+  const ClueRow = ({clue,hint}) => {
+    const [showHint,setShowHint] = useState(false);
+    const canHint = difficulty !== "Legendary";
     return (
-      <div style={{minHeight:"100vh",background:th.bg,transition:"background 0.35s ease",...f()}}>
-        <div style={{maxWidth:420,margin:"0 auto",paddingBottom:70}}>
-          {showBack && (
-            <div style={{display:"flex",alignItems:"center",padding:"14px 20px 0",gap:8}}>
-              <button onClick={goBack} style={{background:"none",border:"none",padding:4,display:"flex",cursor:"pointer"}}><I.Chev c={th.accent} s={22} dir="left"/></button>
-              {title && <span style={{...f(600,16),color:th.text}}>{title}</span>}
-            </div>
+      <div style={{padding:"6px 0",borderBottom:`1px solid ${t.divider}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{...f(400,13),color:t.text,flex:1}}>{clue}</span>
+          {canHint && (
+            <button onClick={() => setShowHint(!showHint)} style={{background:"none",border:"none",padding:2,display:"flex",opacity:showHint?.8:.4,transition:"opacity 0.2s"}}>
+              <I.Info c={t.accent} s={16}/>
+            </button>
           )}
-          {children}
         </div>
-        <BottomNav />
+        {showHint && hint && (
+          <div style={{...f(400,11),color:t.amber,marginTop:4,paddingLeft:8,borderLeft:`2px solid ${t.amber}40`}}>{hint}</div>
+        )}
       </div>
     );
-  }
+  };
 
-  function BottomNav() {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let tn = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) tn.accent = overrideColor;
+  // ── Toggle ──
+  const Toggle = ({on}) => (
+    <div style={{width:40,height:24,borderRadius:12,position:"relative",background:on?t.accent:(darkMode?"#333":"#D0D0D0"),transition:"background 0.2s",flexShrink:0}}>
+      <div style={{width:18,height:18,borderRadius:9,background:"#FFF",position:"absolute",top:3,left:on?19:3,transition:"left 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
+    </div>
+  );
+
+  // ═══════ CROSSWORD LOGIC ═══════
+  const handleCwKey = useCallback((e) => {
+    if (screen !== SCREENS.CROSSWORDS) return;
+    const [r,c] = cwActive;
+    const key = e.key.toUpperCase();
+    if (key === "BACKSPACE") {
+      setCwCells(prev => {const n=[...prev.map(r=>[...r])];n[r][c]="";return n;});
+      // Move back
+      if (cwDir==="across" && c > 0) setCwActive([r,c-1]);
+      if (cwDir==="down" && r > 0) setCwActive([r-1,c]);
+    } else if (key === "TAB") {
+      e.preventDefault();
+      setCwDir(d => d === "across" ? "down" : "across");
+    } else if (/^[A-Z]$/.test(key)) {
+      setCwCells(prev => {const n=[...prev.map(r=>[...r])];n[r][c]=key;return n;});
+      // Advance
+      if (cwDir==="across" && c < 6) setCwActive([r,c+1]);
+      if (cwDir==="down" && r < 6) setCwActive([r+1,c]);
+    } else if (key === "ARROWLEFT") setCwActive([r,Math.max(0,c-1)]);
+    else if (key === "ARROWRIGHT") setCwActive([r,Math.min(6,c+1)]);
+    else if (key === "ARROWUP") setCwActive([Math.max(0,r-1),c]);
+    else if (key === "ARROWDOWN") setCwActive([Math.min(6,r+1),c]);
+  }, [screen, cwActive, cwDir]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleCwKey);
+    return () => window.removeEventListener("keydown", handleCwKey);
+  }, [handleCwKey]);
+
+  const cwCheck = () => {
+    // Highlight correct/incorrect
+    setCwCells(prev => {
+      return prev.map((row,ri) => row.map((cell,ci) => {
+        if (cell === "#") return "#";
+        if (cell === CW_GRID[ri][ci]) return cell;
+        return cell; // keep as-is, user sees
+      }));
+    });
+  };
+  const cwReveal = () => {
+    setCwCells(CW_GRID.map(r => [...r]));
+    setCwRevealed(true);
+    setTimerRunning(false);
+  };
+  const cwClear = () => {
+    setCwCells(CW_GRID.map(r => r.map(c => c === "#" ? "#" : "")));
+    setCwRevealed(false);
+  };
+
+  // ═══════ SOLO LOGIC ═══════
+  const handleSoloKey = useCallback((letter) => {
+    if (soloGameOver) return;
+    if (letter === "Del") {
+      setSoloCurrent(c => c.slice(0,-1));
+    } else if (letter === "Enter") {
+      if (soloCurrent.length === 5) {
+        const guess = soloCurrent.toUpperCase();
+        const result = guess.split("").map((ch,i) => {
+          if (ch === SOLO_WORD[i]) return "correct";
+          if (SOLO_WORD.includes(ch)) return "present";
+          return "absent";
+        });
+        setSoloGuesses(prev => [...prev, {letters: guess.split(""), colors: result}]);
+        setSoloCurrent("");
+        if (guess === SOLO_WORD || soloGuesses.length >= 5) {
+          setSoloGameOver(true);
+          setTimerRunning(false);
+        }
+      }
+    } else if (soloCurrent.length < 5) {
+      setSoloCurrent(c => c + letter.toUpperCase());
     }
-    return (
-      <div style={{position:"fixed",bottom:0,left:0,right:0,background:tn.navBg,borderTop:`1px solid ${tn.navBorder}`,display:"flex",justifyContent:"center",zIndex:100}}>
-        <div style={{display:"flex",maxWidth:420,width:"100%",justifyContent:"space-around",padding:"8px 0 12px"}}>
-          {[
-            {icon:I.Home,label:"Home",scr:SCREENS.HOME},
-            {icon:I.Cross,label:"Crosswords",scr:SCREENS.CROSSWORDS},
-            {icon:I.Grid,label:"Solo",scr:SCREENS.SOLO},
-            {icon:I.Tile,label:"Mini",scr:SCREENS.MINI},
-            {icon:I.Wave,label:"Groove",scr:SCREENS.GROOVE},
-          ].map(item => {
-            const active = screen === item.scr;
+  }, [soloCurrent, soloGuesses, soloGameOver]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (screen !== SCREENS.SOLO) return;
+      const k = e.key;
+      if (k === "Backspace") handleSoloKey("Del");
+      else if (k === "Enter") handleSoloKey("Enter");
+      else if (/^[a-zA-Z]$/.test(k)) handleSoloKey(k.toUpperCase());
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [screen, handleSoloKey]);
+
+  const soloKeyColors = {};
+  soloGuesses.forEach(g => {
+    g.letters.forEach((l,i) => {
+      const c = g.colors[i];
+      if (c === "correct") soloKeyColors[l] = "correct";
+      else if (c === "present" && soloKeyColors[l] !== "correct") soloKeyColors[l] = "present";
+      else if (!soloKeyColors[l]) soloKeyColors[l] = "absent";
+    });
+  });
+
+  // ═══════ GROOVE LOGIC ═══════
+  const handleGrooveCell = (idx) => {
+    if (grooveSelected.includes(idx)) {
+      setGrooveSelected(s => s.filter(i => i !== idx));
+    } else {
+      setGrooveSelected(s => [...s, idx]);
+    }
+    setGrooveWrong(false);
+  };
+  const handleGrooveSubmit = () => {
+    const selectedWord = grooveSelected.map(i => GROOVE_LETTERS[i]).join("");
+    const match = GROOVE_WORDS.find(w => w === selectedWord);
+    if (match && !grooveFound.includes(match)) {
+      setGrooveFound(f => [...f, match]);
+      setGrooveSelected([]);
+      if (grooveFound.length + 1 === GROOVE_WORDS.length) setTimerRunning(false);
+    } else {
+      setGrooveWrong(true);
+      setTimeout(() => { setGrooveSelected([]); setGrooveWrong(false); }, 600);
+    }
+  };
+
+  // ═══════ MINI LOGIC ═══════
+  const handleMiniKey = useCallback((e) => {
+    if (screen !== SCREENS.MINI) return;
+    const [r,c] = miniActive;
+    const key = e.key.toUpperCase();
+    if (key === "BACKSPACE") {
+      setMiniCells(prev => {const n=prev.map(r=>[...r]);n[r][c]="";return n;});
+      if (miniDir==="across" && c > 0) setMiniActive([r,c-1]);
+      if (miniDir==="down" && r > 0) setMiniActive([r-1,c]);
+    } else if (key === "TAB") {
+      e.preventDefault();
+      setMiniDir(d => d === "across" ? "down" : "across");
+    } else if (/^[A-Z]$/.test(key)) {
+      setMiniCells(prev => {const n=prev.map(r=>[...r]);n[r][c]=key;return n;});
+      if (miniDir==="across" && c < 4) setMiniActive([r,c+1]);
+      if (miniDir==="down" && r < 4) setMiniActive([r+1,c]);
+    } else if (key === "ARROWLEFT") setMiniActive([r,Math.max(0,c-1)]);
+    else if (key === "ARROWRIGHT") setMiniActive([r,Math.min(4,c+1)]);
+    else if (key === "ARROWUP") setMiniActive([Math.max(0,r-1),c]);
+    else if (key === "ARROWDOWN") setMiniActive([Math.min(4,r+1),c]);
+  }, [screen, miniActive, miniDir]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleMiniKey);
+    return () => window.removeEventListener("keydown", handleMiniKey);
+  }, [handleMiniKey]);
+
+  // ═══════ HOME ═══════
+  if (screen === SCREENS.HOME) return (
+    <div style={{minHeight:"100vh",background:t.bg,transition:"background 0.35s",...f(),overflow:"hidden"}}>
+      <div style={{maxWidth:420,margin:"0 auto",paddingBottom:80,position:"relative"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px 0",position:"relative",zIndex:1}}>
+          <button onClick={() => navigate(SCREENS.HOW)} style={{background:"none",border:"none",padding:4}}><I.Help c={t.muted}/></button>
+          <div style={{display:"flex",gap:4}}>
+            <button onClick={() => navigate(SCREENS.STATS)} style={{background:"none",border:"none",padding:4}}><I.Bar c={t.muted}/></button>
+            <button onClick={() => navigate(SCREENS.PROFILE)} style={{background:"none",border:"none",padding:4}}><I.User c={t.muted}/></button>
+          </div>
+        </div>
+
+        <header style={{textAlign:"center",padding:"24px 20px 0",position:"relative",zIndex:1}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <I.Note c={t.accent} s={22}/>
+            <h1 className="grad-text" style={{...f(700,36),margin:0,lineHeight:1,letterSpacing:"-0.03em",background:t.gradient,display:"inline-block"}}>{genreLabel}</h1>
+          </div>
+          <p style={{...f(500,13),color:t.muted,marginTop:6,letterSpacing:"0.08em",textTransform:"uppercase"}}>Word Games</p>
+          <p style={{...f(400,12),color:t.muted,marginTop:4}}>{getGreeting()}. {dateStr}.</p>
+        </header>
+
+        <nav style={{display:"flex",gap:2,margin:"18px 20px 0",background:t.pillBg,borderRadius:12,padding:3,border:`1px solid ${t.divider}`}}>
+          {["Jazz","Rock","Pop Culture"].map(g => {
+            const active = g === genre;
+            return <button key={g} onClick={() => setGenre(g)} style={{flex:1,padding:"9px 4px",borderRadius:10,border:"none",background:active?t.pillActive:"transparent",...f(active?600:400,12),color:active?t.pillText:t.muted,transition:"all 0.25s ease"}}>{g}</button>;
+          })}
+        </nav>
+
+        {/* Difficulty pills with hover tooltips */}
+        <div style={{display:"flex",justifyContent:"center",gap:6,margin:"14px 20px"}}>
+          {["Beginner","Standard","Expert","Legendary"].map(d => {
+            const active = d === difficulty;
             return (
-              <button key={item.label} onClick={() => {
-                if (item.scr === SCREENS.HOME) {
-                  setHistory([]);
-                  setScreen(item.scr);
-                  setTimerRunning(false);
-                  setActiveGame(null);
-                } else {
-                  startGame(item.scr);
-                }
-              }} style={{
-                background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"4px 12px",cursor:"pointer"
-              }}>
-                <item.icon c={active ? tn.accent : tn.muted} s={20} />
-                <span style={{...f(active?600:400,9),color:active?tn.accent:tn.muted}}>{item.label}</span>
-              </button>
+              <div key={d} className="tooltip-wrap">
+                <button onClick={() => setDifficulty(d)} style={{
+                  padding:"5px 12px",background:active?t.accentSoft:"transparent",
+                  border:`1px solid ${active?t.accentBorder:t.divider}`,
+                  borderRadius:20,...f(500,10),color:active?t.accent:t.textSecondary,transition:"all 0.2s",
+                }}>{d}</button>
+                <div className="tooltip" style={{background:t.tooltipBg,color:t.tooltipText,...f(400,11)}}>{DIFF_DESC[d]}</div>
+              </div>
             );
           })}
         </div>
+
+        <div style={{padding:"0 20px 8px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+            <span style={{...f(500,10),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase"}}>Today's progress</span>
+            <span style={{...f(600,10),color:t.accent}}>0 / 4</span>
+          </div>
+          <div style={{height:5,background:t.progressTrack,borderRadius:5,overflow:"hidden"}}>
+            <div style={{width:"0%",height:"100%",background:t.progressFill,borderRadius:5,transition:"width 0.5s"}}/>
+          </div>
+        </div>
+
+        <div style={{padding:"8px 20px",display:"flex",flexDirection:"column",gap:8}}>
+          {games.map(game => (
+            <div key={game.id} onClick={() => navigate(game.scr)} style={{
+              background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,
+              padding:"14px 16px",display:"flex",alignItems:"center",gap:14,cursor:"pointer",boxShadow:t.cardShadow,
+            }}>
+              <div style={{width:46,height:46,borderRadius:12,background:t.gradientSoft,border:`1px solid ${t.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <game.icon c={t.accent} s={22}/>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <span style={{...f(600,15),color:t.text,display:"block",marginBottom:2}}>{game.name}</span>
+                <span style={{...f(400,12),color:t.muted}}>{game.desc}</span>
+              </div>
+              <span style={{...f(400,11),color:t.muted,flexShrink:0,opacity:.6}}>{game.time}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{height:1,background:t.divider,margin:"14px 20px"}}/>
+        <div style={{padding:"0 20px"}}>
+          <div onClick={() => navigate(SCREENS.ARCHIVE)} style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"13px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",boxShadow:t.cardShadow}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <I.Cal c={t.accent} s={18}/><span style={{...f(500,14),color:t.text}}>Back Catalog</span>
+            </div>
+            <I.Arrow c={t.muted} s={14}/>
+          </div>
+        </div>
+
+        <div style={{display:"flex",justifyContent:"center",padding:"24px 20px 0"}}>
+          <button onClick={() => setDarkMode(!darkMode)} style={{
+            background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:12,padding:"9px 22px",
+            display:"flex",alignItems:"center",gap:8,boxShadow:t.cardShadow,...f(400,12),color:t.textSecondary,
+          }}>
+            {darkMode ? <I.Sun c={t.accent} s={15}/> : <I.Moon c={t.accent} s={15}/>}
+            {darkMode ? "Light mode" : "Dark mode"}
+          </button>
+        </div>
+
+        <footer style={{display:"flex",justifyContent:"center",gap:20,padding:"28px 20px 16px"}}>
+          {["About","Contact","Instagram","TikTok"].map(l => <span key={l} style={{...f(400,11),color:t.muted,cursor:"pointer"}}>{l}</span>)}
+        </footer>
       </div>
+    </div>
+  );
+
+  // ═══════ CROSSWORDS ═══════
+  if (screen === SCREENS.CROSSWORDS) {
+    const getNum = (r,c) => CW_NUMS[r] && CW_NUMS[r][c];
+    return (
+      <Shell title="Crosswords">
+        <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 8px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{display:"flex",justifyContent:"center",gap:12,padding:"0 20px 12px"}}>
+          {[{l:"Check",fn:cwCheck},{l:"Reveal",fn:cwReveal},{l:"Clear",fn:cwClear}].map(b => (
+            <button key={b.l} onClick={b.fn} style={{background:"none",border:`1px solid ${t.divider}`,borderRadius:8,padding:"5px 14px",...f(500,11),color:t.accent}}>{b.l}</button>
+          ))}
+        </div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1,padding:"0 12px"}} tabIndex={0}>
+          {CW_GRID.map((row,ri) => (
+            <div key={ri} style={{display:"flex",gap:1}}>
+              {row.map((ans,ci) => {
+                const black = ans === "#";
+                const active = cwActive[0]===ri && cwActive[1]===ci;
+                const hlRow = cwDir==="across" && cwActive[0]===ri && !black;
+                const hlCol = cwDir==="down" && cwActive[1]===ci && !black;
+                const userVal = cwCells[ri][ci];
+                const correct = userVal !== "" && userVal !== "#" && userVal === CW_GRID[ri][ci];
+                const wrong = userVal !== "" && userVal !== "#" && userVal !== CW_GRID[ri][ci] && cwRevealed;
+                const num = getNum(ri,ci);
+                return (
+                  <div key={ci} onClick={() => {if(!black){if(cwActive[0]===ri&&cwActive[1]===ci)setCwDir(d=>d==="across"?"down":"across");setCwActive([ri,ci]);}}}
+                    style={{
+                      width:44,height:44,borderRadius:3,position:"relative",cursor:black?"default":"pointer",
+                      background:black?(darkMode?"#222":"#CCC"):active?t.accent:(hlRow||hlCol)?t.accentSoft:t.cardBg,
+                      border:`1px solid ${black?"transparent":active?t.accent:t.cardBorder}`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      ...f(600,16),color:active?t.pillText:wrong?"#EF4444":t.text,
+                    }}>
+                    {num && <span style={{position:"absolute",top:2,left:3,...f(400,8),color:active?t.pillText+"B3":t.muted}}>{num}</span>}
+                    {!black && (userVal !== "#" ? userVal : "")}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        <div style={{padding:"12px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>Across</div>
+          {CW_CLUES.across.map((c,i) => <ClueRow key={`a${i}`} clue={c.clue} hint={c.hint}/>)}
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginTop:16,marginBottom:8}}>Down</div>
+          {CW_CLUES.down.map((c,i) => <ClueRow key={`d${i}`} clue={c.clue} hint={c.hint}/>)}
+        </div>
+        <TriviaBox gameKey="crosswords"/>
+        <SpotifyInvite/>
+      </Shell>
     );
   }
 
-  function CrosswordScreen({goBack,genre,difficulty,darkMode,cwCells,setCwCells,cwActive,setCwActive,cwDir,setCwDir,cwRevealed,setCwRevealed,cwDropdownOpen,setCwDropdownOpen,cwTimerSec,timerRunning,setTimerRunning,colorOverride,cwTriviaIdx,setCwTriviaIdx}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let ts = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) ts.accent = overrideColor;
-    }
+  // ═══════ SOLO ═══════
+  if (screen === SCREENS.SOLO) {
+    const allRows = [...soloGuesses];
+    while (allRows.length < 6) allRows.push(null);
+    const cMap = {correct:t.green,present:t.amber,absent:darkMode?"#444":"#D0D0D0",empty:"transparent"};
+    const bMap = {correct:t.green,present:t.amber,absent:darkMode?"#444":"#D0D0D0",empty:darkMode?"#333":"#D0D0D0"};
+    const keyboard = [["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["Enter","Z","X","C","V","B","N","M","Del"]];
     return (
-      <Shell title="Crosswords" showBack={true}>
-        <GameHeader title="Crosswords" />
-        <TriviaBox gameType="crosswords" triviaIdx={cwTriviaIdx} setTriviaIdx={setCwTriviaIdx} />
-        <div style={{padding:"0 20px",marginBottom:20}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:20}}>
-            {CW_GRID.map((row,r) => row.map((cell,c) => (
-              <div key={`${r}-${c}`} style={{
-                aspectRatio:"1",background:cell==="#"?ts.muted:cwCells[r][c]===""?ts.inputBg:ts.accent,
-                border:`1px solid ${ts.inputBorder}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:cell==="#"?"default":"pointer",color:cell==="#"?ts.muted:ts.text,...f(600,12)
-              }} onClick={() => cwCells[r][c]!=="#" && setCwActive([r,c])}>
-                {CW_NUMS[r]?.[c] && <div style={{position:"absolute",fontSize:9,top:1,left:1,color:ts.textSecondary}}>{CW_NUMS[r][c]}</div>}
-                {cwCells[r][c] && cwCells[r][c]!=="#" && cwCells[r][c]}
+      <Shell title="Solo">
+        <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 16px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,padding:"0 20px"}}>
+          {allRows.map((row,ri) => {
+            const isCurrent = ri === soloGuesses.length && !soloGameOver;
+            return (
+              <div key={ri} style={{display:"flex",gap:6}}>
+                {[0,1,2,3,4].map(ci => {
+                  let letter = "", color = "empty";
+                  if (row) { letter = row.letters[ci]; color = row.colors[ci]; }
+                  else if (isCurrent && ci < soloCurrent.length) { letter = soloCurrent[ci]; }
+                  return (
+                    <div key={ci} style={{
+                      width:54,height:54,borderRadius:8,
+                      background:cMap[color],border:`2px solid ${bMap[color]}`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      ...f(700,22),color:color==="empty"?t.text:"#FFF",
+                      transform: isCurrent && ci === soloCurrent.length - 1 ? "scale(1.05)" : "scale(1)",
+                      transition: "transform 0.1s",
+                    }}>{letter}</div>
+                  );
+                })}
               </div>
-            )))}
-          </div>
-          <div style={{display:"flex",gap:8,marginBottom:20,position:"relative"}}>
-            <div style={{position:"relative",flex:1}}>
-              <button onClick={() => setCwDropdownOpen(cwDropdownOpen==="check"?null:"check")} style={{width:"100%",padding:"10px 12px",border:`1px solid ${ts.accentBorder}`,borderRadius:8,background:ts.accentSoft,color:ts.text,cursor:"pointer",...f(500,12)}}>
-                Check
-              </button>
-              {cwDropdownOpen==="check" && <DropdownMenu open={true} setOpen={() => setCwDropdownOpen(null)} items={[
-                {label:"Check Letter",action:() => {}},
-                {label:"Check Word",action:() => {}},
-                {label:"Check Puzzle",action:() => {}},
-              ]} />}
-            </div>
-            <div style={{position:"relative",flex:1}}>
-              <button onClick={() => setCwDropdownOpen(cwDropdownOpen==="reveal"?null:"reveal")} style={{width:"100%",padding:"10px 12px",border:`1px solid ${ts.accentBorder}`,borderRadius:8,background:ts.accentSoft,color:ts.text,cursor:"pointer",...f(500,12)}}>
-                Reveal
-              </button>
-              {cwDropdownOpen==="reveal" && <DropdownMenu open={true} setOpen={() => setCwDropdownOpen(null)} items={[
-                {label:"Reveal Letter",action:() => {}},
-                {label:"Reveal Word",action:() => {}},
-                {label:"Reveal Puzzle",action:() => {}},
-              ]} />}
-            </div>
-            <div style={{position:"relative",flex:1}}>
-              <button onClick={() => setCwDropdownOpen(cwDropdownOpen==="clear"?null:"clear")} style={{width:"100%",padding:"10px 12px",border:`1px solid ${ts.accentBorder}`,borderRadius:8,background:ts.accentSoft,color:ts.text,cursor:"pointer",...f(500,12)}}>
-                Clear
-              </button>
-              {cwDropdownOpen==="clear" && <DropdownMenu open={true} setOpen={() => setCwDropdownOpen(null)} items={[
-                {label:"Clear Letter",action:() => {}},
-                {label:"Clear Word",action:() => {}},
-                {label:"Clear Puzzle",action:() => {}},
-              ]} />}
-            </div>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background:ts.surface,borderRadius:8,border:`1px solid ${ts.divider}`}}>
-            <span style={{...f(500,12),color:ts.text}}>Time: {cwTimerSec}s</span>
-            <button onClick={() => setTimerRunning(!timerRunning)} style={{background:ts.accent,color:ts.text,border:"none",padding:"6px 12px",borderRadius:6,cursor:"pointer",...f(500,11)}}>
-              {timerRunning?"Pause":"Resume"}
-            </button>
-          </div>
+            );
+          })}
         </div>
+        {soloGameOver && (
+          <div style={{textAlign:"center",padding:"12px 20px"}}>
+            <span style={{...f(600,16),color:soloGuesses[soloGuesses.length-1]?.letters.join("")===SOLO_WORD?t.green:"#EF4444"}}>
+              {soloGuesses[soloGuesses.length-1]?.letters.join("")===SOLO_WORD ? `Solved in ${soloGuesses.length}/6!` : `The word was ${SOLO_WORD}`}
+            </span>
+          </div>
+        )}
+        <div style={{padding:"20px 8px 12px",display:"flex",flexDirection:"column",gap:5,alignItems:"center"}}>
+          {keyboard.map((row,ri) => (
+            <div key={ri} style={{display:"flex",gap:4}}>
+              {row.map(key => {
+                const wide = key==="Enter"||key==="Del";
+                const kc = soloKeyColors[key];
+                return (
+                  <button key={key} onClick={() => handleSoloKey(key)} style={{
+                    width:wide?56:34,height:44,borderRadius:6,
+                    background:kc?(kc==="correct"?t.green:kc==="present"?t.amber:(darkMode?"#333":"#D0D0D0")):(darkMode?"#2A2A2A":"#E5E5E5"),
+                    border:"none",...f(600,wide?10:14),color:kc?"#FFF":t.text,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                  }}>{key}</button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        <TriviaBox gameKey="solo"/>
+        <SpotifyInvite/>
       </Shell>
     );
   }
 
-  function SoloScreen({goBack,genre,difficulty,darkMode,soloGuesses,setSoloGuesses,soloCurrent,setSoloCurrent,soloGameOver,setSoloGameOver,soloTimerSec,timerRunning,setTimerRunning,colorOverride,soloTriviaIdx,setSoloTriviaIdx}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let ts = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) ts.accent = overrideColor;
-    }
+  // ═══════ MINI ═══════
+  if (screen === SCREENS.MINI) {
     return (
-      <Shell title="Solo" showBack={true}>
-        <GameHeader title="Solo" />
-        <TriviaBox gameType="solo" triviaIdx={soloTriviaIdx} setTriviaIdx={setSoloTriviaIdx} />
-        <div style={{padding:"0 20px"}}>
-          <div style={{background:ts.surface,border:`1px solid ${ts.divider}`,borderRadius:12,padding:16,marginBottom:16,textAlign:"center"}}>
-            <div style={{...f(500,12),color:ts.muted,marginBottom:8}}>{SOLO_CLUES[0]}</div>
-            <div style={{display:"flex",gap:4,justifyContent:"center",marginBottom:16}}>
-              {SOLO_WORD.split("").map((c,i) => (
-                <div key={i} style={{width:32,height:40,border:`1px solid ${ts.inputBorder}`,borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",background:soloGuesses[i]===c?ts.accent:ts.inputBg,color:ts.text,...f(600,14)}}>
-                  {soloGuesses[i]||""}
-                </div>
-              ))}
-            </div>
-            <input type="text" maxLength={SOLO_WORD.length} value={soloCurrent} onChange={e => setSoloCurrent(e.target.value.toUpperCase())} placeholder="Type answer" style={{width:"100%",padding:"10px 12px",border:`1px solid ${ts.inputBorder}`,borderRadius:8,background:ts.inputBg,color:ts.text,marginBottom:12,...f(400,13)}} />
-            <button onClick={() => {if(soloCurrent===SOLO_WORD) setSoloGameOver(true);else alert("Try again!");}} style={{width:"100%",padding:"10px 12px",background:ts.accent,color:ts.text,border:"none",borderRadius:8,cursor:"pointer",...f(600,12),marginBottom:12}}>
-              Submit
-            </button>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{...f(500,12),color:ts.text}}>Time: {soloTimerSec}s</span>
-              <button onClick={() => setTimerRunning(!timerRunning)} style={{background:ts.accent,color:ts.text,border:"none",padding:"6px 12px",borderRadius:6,cursor:"pointer",...f(500,11)}}>
-                {timerRunning?"Pause":"Resume"}
-              </button>
-            </div>
-          </div>
+      <Shell title="Mini">
+        <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 12px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{display:"flex",justifyContent:"center",gap:12,padding:"0 20px 12px"}}>
+          {[{l:"Reveal",fn:()=>setMiniCells(MINI_GRID.map(r=>[...r]))},{l:"Clear",fn:()=>setMiniCells(MINI_GRID.map(r=>r.map(c=>c==="#"?"#":"")))}].map(b => (
+            <button key={b.l} onClick={b.fn} style={{background:"none",border:`1px solid ${t.divider}`,borderRadius:8,padding:"5px 14px",...f(500,11),color:t.accent}}>{b.l}</button>
+          ))}
         </div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1,padding:"0 20px"}} tabIndex={0}>
+          {MINI_GRID.map((row,ri) => (
+            <div key={ri} style={{display:"flex",gap:1}}>
+              {row.map((ans,ci) => {
+                const black = ans === "#";
+                const active = miniActive[0]===ri && miniActive[1]===ci;
+                const hlRow = miniDir==="across" && miniActive[0]===ri && !black;
+                const hlCol = miniDir==="down" && miniActive[1]===ci && !black;
+                const num = MINI_NUMS[ri] && MINI_NUMS[ri][ci];
+                return (
+                  <div key={ci} onClick={() => {if(!black){if(miniActive[0]===ri&&miniActive[1]===ci)setMiniDir(d=>d==="across"?"down":"across");setMiniActive([ri,ci]);}}}
+                    style={{
+                      width:56,height:56,borderRadius:4,position:"relative",cursor:black?"default":"pointer",
+                      background:black?(darkMode?"#222":"#CCC"):active?t.accent:(hlRow||hlCol)?t.accentSoft:t.cardBg,
+                      border:`1px solid ${black?"transparent":active?t.accent:t.cardBorder}`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      ...f(600,20),color:active?t.pillText:t.text,
+                    }}>
+                    {num && <span style={{position:"absolute",top:2,left:4,...f(400,8),color:active?t.pillText+"B3":t.muted}}>{num}</span>}
+                    {!black && miniCells[ri][ci]}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        <div style={{padding:"12px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>Across</div>
+          {MINI_CLUES.across.map((c,i) => <ClueRow key={`a${i}`} clue={c.clue} hint={c.hint}/>)}
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginTop:16,marginBottom:8}}>Down</div>
+          {MINI_CLUES.down.map((c,i) => <ClueRow key={`d${i}`} clue={c.clue} hint={c.hint}/>)}
+        </div>
+        <TriviaBox gameKey="mini"/>
+        <SpotifyInvite/>
       </Shell>
     );
   }
 
-  function MiniScreen({goBack,genre,difficulty,darkMode,miniCells,setMiniCells,miniActive,setMiniActive,miniDir,setMiniDir,miniDropdownOpen,setMiniDropdownOpen,miniTimerSec,timerRunning,setTimerRunning,colorOverride,miniTriviaIdx,setMiniTriviaIdx}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let ts = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) ts.accent = overrideColor;
-    }
+  // ═══════ GROOVE ═══════
+  if (screen === SCREENS.GROOVE) {
+    const SIZE = 8;
     return (
-      <Shell title="Mini" showBack={true}>
-        <GameHeader title="Mini" />
-        <TriviaBox gameType="mini" triviaIdx={miniTriviaIdx} setTriviaIdx={setMiniTriviaIdx} />
-        <div style={{padding:"0 20px"}}>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:2,marginBottom:20}}>
-            {MINI_GRID.map((row,r) => row.map((cell,c) => (
-              <div key={`${r}-${c}`} style={{
-                aspectRatio:"1",background:cell==="#"?ts.muted:miniCells[r][c]===""?ts.inputBg:ts.accent,
-                border:`1px solid ${ts.inputBorder}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:cell==="#"?"default":"pointer",color:cell==="#"?ts.muted:ts.text,...f(600,12)
-              }}>
-                {miniCells[r][c] && miniCells[r][c]!=="#" && miniCells[r][c]}
-              </div>
-            )))}
-          </div>
-          <div style={{display:"flex",gap:8,marginBottom:20,position:"relative"}}>
-            <div style={{position:"relative",flex:1}}>
-              <button onClick={() => setMiniDropdownOpen(miniDropdownOpen==="check"?null:"check")} style={{width:"100%",padding:"10px 12px",border:`1px solid ${ts.accentBorder}`,borderRadius:8,background:ts.accentSoft,color:ts.text,cursor:"pointer",...f(500,12)}}>
-                Check
-              </button>
-              {miniDropdownOpen==="check" && <DropdownMenu open={true} setOpen={() => setMiniDropdownOpen(null)} items={[
-                {label:"Check Letter",action:() => {}},
-                {label:"Check Word",action:() => {}},
-                {label:"Check Puzzle",action:() => {}},
-              ]} />}
-            </div>
-            <div style={{position:"relative",flex:1}}>
-              <button onClick={() => setMiniDropdownOpen(miniDropdownOpen==="reveal"?null:"reveal")} style={{width:"100%",padding:"10px 12px",border:`1px solid ${ts.accentBorder}`,borderRadius:8,background:ts.accentSoft,color:ts.text,cursor:"pointer",...f(500,12)}}>
-                Reveal
-              </button>
-              {miniDropdownOpen==="reveal" && <DropdownMenu open={true} setOpen={() => setMiniDropdownOpen(null)} items={[
-                {label:"Reveal Letter",action:() => {}},
-                {label:"Reveal Word",action:() => {}},
-                {label:"Reveal Puzzle",action:() => {}},
-              ]} />}
-            </div>
-            <div style={{position:"relative",flex:1}}>
-              <button onClick={() => setMiniDropdownOpen(miniDropdownOpen==="clear"?null:"clear")} style={{width:"100%",padding:"10px 12px",border:`1px solid ${ts.accentBorder}`,borderRadius:8,background:ts.accentSoft,color:ts.text,cursor:"pointer",...f(500,12)}}>
-                Clear
-              </button>
-              {miniDropdownOpen==="clear" && <DropdownMenu open={true} setOpen={() => setMiniDropdownOpen(null)} items={[
-                {label:"Clear Letter",action:() => {}},
-                {label:"Clear Word",action:() => {}},
-                {label:"Clear Puzzle",action:() => {}},
-              ]} />}
-            </div>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background:ts.surface,borderRadius:8,border:`1px solid ${ts.divider}`}}>
-            <span style={{...f(500,12),color:ts.text}}>Time: {miniTimerSec}s</span>
-            <button onClick={() => setTimerRunning(!timerRunning)} style={{background:ts.accent,color:ts.text,border:"none",padding:"6px 12px",borderRadius:6,cursor:"pointer",...f(500,11)}}>
-              {timerRunning?"Pause":"Resume"}
-            </button>
-          </div>
+      <Shell title="Groove">
+        <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Find 8 words — Puzzle #42 — {genre} — {difficulty}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 12px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",padding:"0 20px 10px"}}>
+          {GROOVE_WORDS.map(w => {
+            const found = grooveFound.includes(w);
+            return <span key={w} style={{padding:"4px 10px",borderRadius:6,background:found?t.greenSoft:t.accentSoft,border:`1px solid ${found?t.green:t.accentBorder}`,...f(600,11),color:found?t.green:t.accent,textDecoration:found?"line-through":"none",opacity:found?.5:1}}>{w}</span>;
+          })}
         </div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"0 12px"}}>
+          {Array.from({length:SIZE},(_,ri) => (
+            <div key={ri} style={{display:"flex",gap:2}}>
+              {Array.from({length:SIZE},(_,ci) => {
+                const idx = ri*SIZE+ci;
+                const sel = grooveSelected.includes(idx);
+                const isFoundLetter = grooveFound.some(w => {
+                  const start = GROOVE_LETTERS.join("").indexOf(w);
+                  if (start === -1) return false;
+                  for (let k=0;k<w.length;k++) if (start+k===idx) return true;
+                  return false;
+                });
+                return (
+                  <div key={ci} onClick={() => handleGrooveCell(idx)} style={{
+                    width:40,height:40,borderRadius:6,cursor:"pointer",
+                    background:isFoundLetter?t.greenSoft:sel?(grooveWrong?"rgba(239,68,68,0.2)":t.accentSoft):t.cardBg,
+                    border:`1px solid ${isFoundLetter?t.green:sel?(grooveWrong?"#EF4444":t.accent):t.cardBorder}`,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    ...f(600,14),color:isFoundLetter?t.green:sel?t.accent:t.text,
+                    transition:"all 0.15s",
+                  }}>{GROOVE_LETTERS[idx]}</div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        {grooveSelected.length > 0 && (
+          <div style={{display:"flex",justifyContent:"center",padding:"12px 20px",gap:10}}>
+            <span style={{...f(600,14),color:t.accent}}>{grooveSelected.map(i=>GROOVE_LETTERS[i]).join("")}</span>
+            <button onClick={handleGrooveSubmit} style={{background:t.gradientBtn,border:"none",borderRadius:8,padding:"6px 20px",...f(600,12),color:t.pillText}}>Submit</button>
+            <button onClick={() => setGrooveSelected([])} style={{background:"none",border:`1px solid ${t.divider}`,borderRadius:8,padding:"6px 14px",...f(400,12),color:t.muted}}>Clear</button>
+          </div>
+        )}
+        <div style={{padding:"8px 20px",textAlign:"center"}}><span style={{...f(400,11),color:t.muted}}>Tap letters to select, then Submit. {grooveFound.length}/{GROOVE_WORDS.length} found.</span></div>
+        <TriviaBox gameKey="groove"/>
+        <SpotifyInvite/>
       </Shell>
     );
   }
 
-  function GrooveScreen({goBack,genre,difficulty,darkMode,grooveSelected,setGrooveSelected,grooveFound,setGrooveFound,grooveWrong,setGrooveWrong,grooveTimerSec,timerRunning,setTimerRunning,colorOverride,grooveTriviaIdx,setGrooveTriviaIdx}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let ts = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) ts.accent = overrideColor;
-    }
-    return (
-      <Shell title="Groove" showBack={true}>
-        <GameHeader title="Groove" />
-        <TriviaBox gameType="groove" triviaIdx={grooveTriviaIdx} setTriviaIdx={setGrooveTriviaIdx} />
-        <div style={{padding:"0 20px"}}>
-          <div style={{background:ts.surface,border:`1px solid ${ts.divider}`,borderRadius:12,padding:16,marginBottom:16}}>
-            <div style={{...f(500,12),color:ts.muted,marginBottom:12,textAlign:"center"}}>{GROOVE_CLUE}</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16,justifyContent:"center"}}>
-              {GROOVE_WORDS.map((word,idx) => (
-                <button key={idx} onClick={() => setGrooveSelected(s => s.includes(idx)?s.filter(i=>i!==idx):[...s,idx])} style={{
-                  padding:"8px 12px",borderRadius:8,border:`1px solid ${ts.accentBorder}`,background:grooveSelected.includes(idx)?ts.accent:ts.inputBg,color:grooveSelected.includes(idx)?ts.text:ts.text,cursor:"pointer",...f(grooveSelected.includes(idx)?600:400,12)
-                }}>
-                  {word}
-                </button>
-              ))}
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{...f(500,12),color:ts.text}}>Time: {grooveTimerSec}s</span>
-              <button onClick={() => setTimerRunning(!timerRunning)} style={{background:ts.accent,color:ts.text,border:"none",padding:"6px 12px",borderRadius:6,cursor:"pointer",...f(500,11)}}>
-                {timerRunning?"Pause":"Resume"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Shell>
-    );
-  }
-
-  function StatsScreen({goBack,statsTab,setStatsTab,genre,difficulty,darkMode,colorOverride}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let ts = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) ts.accent = overrideColor;
-    }
+  // ═══════ STATS ═══════
+  if (screen === SCREENS.STATS) {
+    const overallStats = {played:87,winRate:94,streak:12,bestStreak:23,avgTime:"3:42"};
+    const gameStats = {
+      Crosswords:{played:32,winRate:97,avgTime:"12:18",bestTime:"8:45",streak:8},
+      Solo:{played:24,winRate:88,avgTime:"2:36",bestTime:"1:12",streak:5},
+      Mini:{played:18,winRate:100,avgTime:"1:24",bestTime:"0:38",streak:18},
+      Groove:{played:13,winRate:92,avgTime:"4:15",bestTime:"2:50",streak:4},
+    };
+    const genreBreakdown = {Jazz:{played:42,winRate:95},Rock:{played:28,winRate:93},"Pop Culture":{played:17,winRate:94}};
+    const dist = [{g:1,n:1},{g:2,n:4},{g:3,n:7},{g:4,n:6},{g:5,n:4},{g:6,n:2}];
+    const mx = Math.max(...dist.map(d=>d.n));
     return (
       <Shell title="Stats">
-        <div style={{padding:"20px"}}>
-          <div style={{display:"flex",gap:8,marginBottom:20}}>
-            {["overview","monthly","alltime"].map(tab => (
-              <button key={tab} onClick={() => setStatsTab(tab)} style={{flex:1,padding:"10px 12px",border:"none",borderRadius:8,background:statsTab===tab?ts.accent:ts.surface,color:ts.text,cursor:"pointer",...f(statsTab===tab?600:400,12)}}>
-                {tab.charAt(0).toUpperCase()+tab.slice(1)}
-              </button>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"16px 20px 0"}}>
+          {[{l:"Played",v:overallStats.played,c:t.accent},{l:"Win %",v:overallStats.winRate,c:t.green},{l:"Streak",v:overallStats.streak,c:t.amber}].map(s => (
+            <div key={s.l} style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"14px 8px",textAlign:"center",boxShadow:t.cardShadow}}>
+              <div style={{...f(700,26),color:s.c,lineHeight:1.1}}>{s.v}</div>
+              <div style={{...f(400,10),color:t.muted,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,padding:"8px 20px 0"}}>
+          <div style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"12px 14px",boxShadow:t.cardShadow,display:"flex",alignItems:"center",gap:10}}>
+            <I.Trophy c={t.accent} s={18}/><div><div style={{...f(700,18),color:t.accent,lineHeight:1}}>{overallStats.bestStreak}</div><div style={{...f(400,10),color:t.muted,marginTop:2}}>Best Streak</div></div>
+          </div>
+          <div style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"12px 14px",boxShadow:t.cardShadow,display:"flex",alignItems:"center",gap:10}}>
+            <I.Clock c={t.accent} s={18}/><div><div style={{...f(700,18),color:t.accent,lineHeight:1}}>{overallStats.avgTime}</div><div style={{...f(400,10),color:t.muted,marginTop:2}}>Avg. Time</div></div>
+          </div>
+        </div>
+        <div style={{padding:"20px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10}}>By Game</div>
+          {Object.entries(gameStats).map(([name,gs]) => (
+            <div key={name} style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:12,padding:"12px 14px",marginBottom:8,boxShadow:t.cardShadow}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <span style={{...f(600,14),color:t.text}}>{name}</span><span style={{...f(400,11),color:t.muted}}>{gs.played} played</span>
+              </div>
+              <div style={{display:"flex",gap:12}}>
+                <div style={{flex:1}}><div style={{...f(400,10),color:t.muted,marginBottom:2}}>Win %</div><div style={{height:4,background:t.progressTrack,borderRadius:4,overflow:"hidden"}}><div style={{width:`${gs.winRate}%`,height:"100%",background:t.green,borderRadius:4}}/></div><div style={{...f(600,11),color:t.green,marginTop:2}}>{gs.winRate}%</div></div>
+                <div style={{textAlign:"center",minWidth:50}}><div style={{...f(400,10),color:t.muted,marginBottom:2}}>Avg</div><div style={{...f(600,13),color:t.textSecondary}}>{gs.avgTime}</div></div>
+                <div style={{textAlign:"center",minWidth:50}}><div style={{...f(400,10),color:t.muted,marginBottom:2}}>Best</div><div style={{...f(600,13),color:t.accent}}>{gs.bestTime}</div></div>
+                <div style={{textAlign:"center",minWidth:40}}><div style={{...f(400,10),color:t.muted,marginBottom:2}}>Streak</div><div style={{...f(600,13),color:t.amber}}>{gs.streak}</div></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{padding:"12px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10}}>By Genre</div>
+          <div style={{display:"flex",gap:8}}>
+            {Object.entries(genreBreakdown).map(([gn,gd]) => (
+              <div key={gn} style={{flex:1,background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:12,padding:"12px 10px",textAlign:"center",boxShadow:t.cardShadow}}>
+                <div style={{...f(600,12),color:t.accent,marginBottom:6}}>{gn}</div>
+                <div style={{...f(700,20),color:t.text,lineHeight:1}}>{gd.played}</div>
+                <div style={{...f(400,10),color:t.muted,marginTop:2}}>played</div>
+                <div style={{height:3,background:t.progressTrack,borderRadius:3,overflow:"hidden",marginTop:8}}><div style={{width:`${gd.winRate}%`,height:"100%",background:t.green,borderRadius:3}}/></div>
+                <div style={{...f(500,10),color:t.green,marginTop:4}}>{gd.winRate}% win</div>
+              </div>
             ))}
           </div>
-          <div style={{background:ts.surface,border:`1px solid ${ts.divider}`,borderRadius:12,padding:16,textAlign:"center"}}>
-            <div style={{...f(600,24),color:ts.text,marginBottom:4}}>42</div>
-            <div style={{...f(400,12),color:ts.textSecondary}}>Total Puzzles Solved</div>
-          </div>
+        </div>
+        <div style={{padding:"20px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:12}}>Solo — Guess Distribution</div>
+          {dist.map(d => (
+            <div key={d.g} style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
+              <span style={{...f(500,13),color:t.textSecondary,width:14,textAlign:"right"}}>{d.g}</span>
+              <div style={{flex:1,height:28,background:t.cardBg,borderRadius:7,border:`1px solid ${t.cardBorder}`,overflow:"hidden"}}>
+                <div style={{width:`${Math.max((d.n/mx)*100,10)}%`,height:"100%",background:d.n===mx?t.gradientBtn:t.accentSoft,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:8}}>
+                  <span style={{...f(600,11),color:d.n===mx?t.pillText:t.accent}}>{d.n}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{padding:"20px 20px"}}>
+          <button onClick={() => navigate(SCREENS.SHARE)} style={{width:"100%",padding:"13px",borderRadius:12,background:t.gradientBtn,border:"none",...f(600,14),color:t.pillText}}>Share Results</button>
         </div>
       </Shell>
     );
   }
 
-  function ArchiveScreen({goBack,genre,difficulty,darkMode,colorOverride}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let ts = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) ts.accent = overrideColor;
-    }
-    const days = 28;
-    const completed = 12;
-    const inProgress = 8;
-    const percentComplete = Math.round((completed / days) * 100);
+  // ═══════ SHARE ═══════
+  if (screen === SCREENS.SHARE) return (
+    <Shell title="">
+      <div style={{margin:"20px",background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:18,padding:"28px 20px",textAlign:"center",boxShadow:t.cardShadow}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
+          <I.Note c={t.accent} s={18}/>
+          <span className="grad-text" style={{...f(700,28),background:t.gradient,display:"inline-block"}}>Riff</span>
+        </div>
+        <div style={{...f(400,12),color:t.muted,marginBottom:16}}>Puzzle #42 — {dateStr}</div>
+        <div style={{...f(400,14),color:t.textSecondary,marginBottom:20}}>Share your results with friends</div>
+        <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+          {["Copy","WhatsApp","X"].map(b => (
+            <button key={b} style={{padding:"9px 20px",borderRadius:10,background:b==="Copy"?t.gradientBtn:"transparent",border:b==="Copy"?"none":`1px solid ${t.cardBorder}`,...f(500,12),color:b==="Copy"?t.pillText:t.textSecondary}}>{b}</button>
+          ))}
+        </div>
+      </div>
+      <SpotifyInvite/>
+    </Shell>
+  );
 
+  // ═══════ AUTH ═══════
+  if (screen === SCREENS.AUTH) return (
+    <Shell title="">
+      <div style={{padding:"40px 24px",textAlign:"center"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:6}}>
+          <I.Note c={t.accent} s={20}/>
+          <h1 className="grad-text" style={{...f(700,38),margin:0,lineHeight:1,background:t.gradient,display:"inline-block"}}>Riff</h1>
+        </div>
+        <p style={{...f(400,13),color:t.muted,marginBottom:32}}>Sign in to save your stats and streaks</p>
+        <input type="email" placeholder="Email address" style={{width:"100%",padding:"13px 16px",borderRadius:12,background:t.inputBg,border:`1px solid ${t.inputBorder}`,...f(400,14),color:t.text,outline:"none",boxSizing:"border-box",marginBottom:12}}/>
+        <button style={{width:"100%",padding:"13px",borderRadius:12,background:t.gradientBtn,border:"none",...f(600,14),color:t.pillText,marginBottom:20}}>Continue with email</button>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}><div style={{flex:1,height:1,background:t.divider}}/><span style={{...f(400,12),color:t.muted}}>or</span><div style={{flex:1,height:1,background:t.divider}}/></div>
+        <button style={{width:"100%",padding:"13px",borderRadius:12,background:t.cardBg,border:`1px solid ${t.cardBorder}`,...f(500,14),color:t.text,display:"flex",alignItems:"center",justifyContent:"center",gap:10,boxShadow:t.cardShadow}}>
+          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 001 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+      </div>
+    </Shell>
+  );
+
+  // ═══════ HOW TO PLAY ═══════
+  if (screen === SCREENS.HOW) {
+    const sections = [
+      {title:"Crosswords",body:"Fill the grid using across and down clues. Click a cell and type. Click again to switch direction. Tap the info icon on any clue for a hint."},
+      {title:"Groove",body:"Tap letters to select them in order, forming a word. Press Submit to check. Green = found. Red = wrong. Find all 8 words."},
+      {title:"Solo",body:"Guess the 5-letter word in 6 tries. Type or tap the keyboard. Green = right letter, right spot. Yellow = right letter, wrong spot. Gray = not in the word."},
+      {title:"Mini",body:"A 5x5 crossword. Click cells and type. Same controls as Crosswords but faster."},
+    ];
     return (
-      <Shell title="Archive">
+      <Shell title="How to Play">
         <div style={{padding:"20px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
-            <div style={{...f(600,14),color:ts.text}}>April 2026</div>
-            <div style={{...f(500,12),color:ts.muted}}>{percentComplete}% complete</div>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:8}}>
-            {Array.from({length:days}).map((_, idx) => {
-              const isCompleted = idx < completed;
-              const isInProgress = idx >= completed && idx < completed + inProgress;
-              let statusIcon = null;
-              if (isCompleted) statusIcon = <I.Check c={ts.green} s={14} />;
-              else if (isInProgress) statusIcon = <div style={{width:8,height:8,borderRadius:"50%",background:ts.amber}}></div>;
+          {sections.map((s,i) => (
+            <div key={i} style={{marginBottom:12,padding:"16px",background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,boxShadow:t.cardShadow}}>
+              <div style={{...f(600,15),color:t.accent,marginBottom:6}}>{s.title}</div>
+              <div style={{...f(400,13),color:t.textSecondary,lineHeight:1.6}}>{s.body}</div>
+            </div>
+          ))}
+        </div>
+      </Shell>
+    );
+  }
 
+  // ═══════ PROFILE ═══════
+  if (screen === SCREENS.PROFILE) return (
+    <Shell title="Me">
+      <div style={{padding:"20px",textAlign:"center"}}>
+        <div style={{width:72,height:72,borderRadius:20,background:t.gradientSoft,border:`2px solid ${t.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",...f(700,28),color:t.accent}}>A</div>
+        <div style={{...f(600,18),color:t.text,marginBottom:2}}>Alex</div>
+        <div style={{...f(400,12),color:t.muted,marginBottom:20}}>Free tier</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
+          {[{l:"Played",v:"87"},{l:"Streak",v:"12"},{l:"Win %",v:"94"}].map(s => (
+            <div key={s.l} style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"12px 8px",boxShadow:t.cardShadow}}>
+              <div style={{...f(700,20),color:t.accent}}>{s.v}</div><div style={{...f(400,10),color:t.muted,marginTop:2}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+        {[{l:"Settings",g:SCREENS.SETTINGS},{l:"Sign in",g:SCREENS.AUTH}].map(item => (
+          <button key={item.l} onClick={() => navigate(item.g)} style={{width:"100%",padding:"13px 16px",borderRadius:12,marginBottom:8,background:t.cardBg,border:`1px solid ${t.cardBorder}`,...f(500,14),color:t.text,display:"flex",justifyContent:"space-between",alignItems:"center",boxShadow:t.cardShadow}}>
+            <span>{item.l}</span><I.Arrow c={t.muted} s={14}/>
+          </button>
+        ))}
+      </div>
+    </Shell>
+  );
+
+  // ═══════ SETTINGS ═══════
+  if (screen === SCREENS.SETTINGS) {
+    const Row = ({label,toggle,on,onClick}) => (
+      <div onClick={onClick} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"13px 0",borderBottom:`1px solid ${t.divider}`,cursor:onClick?"pointer":"default"}}>
+        <span style={{...f(400,14),color:t.text}}>{label}</span>
+        {toggle ? <Toggle on={on}/> : onClick ? <I.Arrow c={t.muted} s={14}/> : null}
+      </div>
+    );
+    return (
+      <Shell title="Settings">
+        <div style={{padding:"8px 20px"}}>
+          <div style={{...f(600,10),color:t.muted,letterSpacing:"0.1em",textTransform:"uppercase",padding:"16px 0 4px"}}>Appearance</div>
+          <Row label="Dark Mode" toggle on={darkMode} onClick={() => setDarkMode(!darkMode)}/>
+          <div style={{...f(600,10),color:t.muted,letterSpacing:"0.1em",textTransform:"uppercase",padding:"20px 0 4px"}}>Notifications</div>
+          <Row label="Daily Puzzles" toggle on={true}/>
+          <div style={{...f(600,10),color:t.muted,letterSpacing:"0.1em",textTransform:"uppercase",padding:"20px 0 4px"}}>Puzzle</div>
+          <Row label="Skip filled squares" toggle on={true}/>
+          <Row label="Show Timer" toggle on={true}/>
+          <Row label="High Contrast Mode" toggle on={false}/>
+          <div style={{...f(600,10),color:t.muted,letterSpacing:"0.1em",textTransform:"uppercase",padding:"20px 0 4px"}}>Support</div>
+          <Row label="Help Center" onClick={() => {}}/>
+          <Row label="Feedback" onClick={() => {}}/>
+          <button style={{width:"100%",padding:"13px",borderRadius:12,marginTop:24,background:"transparent",border:`1px solid ${darkMode?"#442222":"#FECACA"}`,...f(500,14),color:"#EF4444"}}>Log Out</button>
+        </div>
+      </Shell>
+    );
+  }
+
+  // ═══════ ARCHIVE ═══════
+  if (screen === SCREENS.ARCHIVE) {
+    const daysInMonth = 30;
+    const solved = [1,2,3,4,5,6,7,8]; const perfect = [1,3,5,7];
+    return (
+      <Shell title="Back Catalog">
+        <div style={{padding:"16px 20px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+            <I.Chev c={t.muted} s={20} dir="left"/>
+            <span style={{...f(600,15),color:t.text}}>April 2026</span>
+            <I.Chev c={t.muted} s={20} dir="right"/>
+          </div>
+          <div style={{display:"flex",gap:2,background:t.pillBg,borderRadius:10,padding:3,border:`1px solid ${t.divider}`,marginBottom:16}}>
+            {["Cross","Solo","Groove","Mini"].map((g,i) => (
+              <button key={g} style={{flex:1,padding:"7px 2px",borderRadius:8,background:i===0?t.pillActive:"transparent",border:"none",...f(i===0?600:400,11),color:i===0?t.pillText:t.muted}}>{g}</button>
+            ))}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:4}}>
+            {["S","M","T","W","T","F","S"].map((d,i) => <div key={i} style={{textAlign:"center",...f(500,10),color:t.muted,padding:"4px 0"}}>{d}</div>)}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4}}>
+            {[0,0,0].map((_,i) => <div key={`e${i}`}/>)}
+            {Array.from({length:daysInMonth},(_,i)=>i+1).map(day => {
+              const s = solved.includes(day); const p = perfect.includes(day);
+              const td = day === today.getDate();
               return (
-                <div key={idx} style={{
-                  aspectRatio:"1",background:ts.surface,border:`1px solid ${ts.divider}`,borderRadius:8,
-                  display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:4,cursor:"pointer"
-                }}>
-                  <div style={{...f(500,11),color:ts.text}}>{idx+1}</div>
-                  {statusIcon && <div>{statusIcon}</div>}
+                <div key={day} style={{aspectRatio:"1",borderRadius:8,background:p?t.gradientBtn:s?t.accentSoft:t.cardBg,border:`1px solid ${td?t.accent:s?t.accentBorder:t.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+                  <span style={{...f(500,12),color:p?t.pillText:s?t.accent:(day>today.getDate()?t.muted:t.textSecondary),opacity:day>today.getDate()?.3:1}}>{day}</span>
                 </div>
               );
             })}
           </div>
-        </div>
-      </Shell>
-    );
-  }
-
-  function ProfileScreen({goBack,genre,difficulty,darkMode,colorOverride}) {
-    const baseTheme = GENRE_THEMES[genre][darkMode ? "dark" : "light"];
-    let ts = {...baseTheme};
-    if (colorOverride && colorOverride !== "Default") {
-      const overrideColor = COLOR_PALETTES[colorOverride];
-      if (overrideColor) ts.accent = overrideColor;
-    }
-    return (
-      <Shell title="Profile">
-        <div style={{padding:"20px",textAlign:"center"}}>
-          <div style={{background:ts.accent,width:64,height:64,borderRadius:"50%",margin:"0 auto 12px"}}></div>
-          <div style={{...f(600,16),color:ts.text,marginBottom:4}}>Riff Player</div>
-          <div style={{...f(400,12),color:ts.textSecondary}}>Puzzle Enthusiast</div>
         </div>
       </Shell>
     );
