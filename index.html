@@ -15,9 +15,13 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body, #root { height: 100%; width: 100%; }
   body { font-family: 'Spline Sans', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-  button { font-family: inherit; }
+  button { font-family: inherit; cursor: pointer; }
   input { font-family: inherit; }
   ::-webkit-scrollbar { width: 0; }
+  .grad-text { -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; background-clip: text !important; }
+  .tooltip-wrap { position: relative; }
+  .tooltip-wrap .tooltip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; padding: 6px 12px; border-radius: 8px; white-space: nowrap; z-index: 99; pointer-events: none; font-size: 11px; font-weight: 400; }
+  .tooltip-wrap:hover .tooltip { display: block; }
 </style>
 </head>
 <body>
@@ -26,304 +30,214 @@
 const { useState, useEffect, useCallback, useRef } = React;
 
 // ═══════════════════════════════════════════════════════════════
-// RIFF WORD GAMES — Full App
-// Genre accents: Jazz=mustard, Rock=black/white, Pop Culture=purple
-// Gradient aesthetic from Encore/Plaineth references
-// Font: Spline Sans ONLY — ALL FREE, no paywall
+// RIFF WORD GAMES — Interactive App v2
 // ═══════════════════════════════════════════════════════════════
 
 const GENRE_THEMES = {
   Jazz: {
     light: {
-      bg: "#F7F5F0", surface: "#FFFFFF", surfaceHover: "#F2EFE8",
-      text: "#1A1708", textSecondary: "#5C5640", muted: "#9E9680",
-      accent: "#C49A2A", accentHover: "#B08A1E",
-      accentSoft: "rgba(196,154,42,0.10)", accentBorder: "rgba(196,154,42,0.28)",
-      gradient: "linear-gradient(135deg, #C49A2A 0%, #E8C85A 50%, #C49A2A 100%)",
-      gradientSoft: "linear-gradient(135deg, rgba(196,154,42,0.08) 0%, rgba(232,200,90,0.12) 100%)",
-      gradientBtn: "linear-gradient(135deg, #C49A2A 0%, #D4AF37 50%, #B8860B 100%)",
-      green: "#2D8F4E", greenSoft: "rgba(45,143,78,0.10)",
-      amber: "#D4760A", amberSoft: "rgba(212,118,10,0.10)",
-      cardBg: "#FFFFFF", cardBorder: "#E8E2D4", cardShadow: "0 1px 4px rgba(120,100,50,0.06)",
-      divider: "#E8E2D4",
-      pillBg: "#F0ECE2", pillActive: "linear-gradient(135deg, #C49A2A 0%, #D4AF37 100%)", pillText: "#FFFFFF",
-      streakBg: "rgba(196,154,42,0.08)", streakBorder: "rgba(196,154,42,0.18)",
-      progressTrack: "#E8E2D4", progressFill: "linear-gradient(90deg, #C49A2A, #E8C85A)",
-      inputBg: "#F0ECE2", inputBorder: "#DDD6C6",
-      navBg: "#FFFFFF", navBorder: "#E8E2D4",
-      tagline: "daily jazz word games",
+      bg:"#F7F5F0",surface:"#FFFFFF",surfaceHover:"#F2EFE8",text:"#1A1708",textSecondary:"#5C5640",muted:"#9E9680",
+      accent:"#C49A2A",accentHover:"#B08A1E",accentSoft:"rgba(196,154,42,0.10)",accentBorder:"rgba(196,154,42,0.28)",
+      gradient:"linear-gradient(135deg,#C49A2A 0%,#E8C85A 50%,#C49A2A 100%)",
+      gradientSoft:"linear-gradient(135deg,rgba(196,154,42,0.08) 0%,rgba(232,200,90,0.12) 100%)",
+      gradientBtn:"linear-gradient(135deg,#C49A2A 0%,#D4AF37 50%,#B8860B 100%)",
+      green:"#2D8F4E",greenSoft:"rgba(45,143,78,0.10)",amber:"#D4760A",amberSoft:"rgba(212,118,10,0.10)",
+      cardBg:"#FFFFFF",cardBorder:"#E8E2D4",cardShadow:"0 1px 4px rgba(120,100,50,0.06)",divider:"#E8E2D4",
+      pillBg:"#F0ECE2",pillActive:"linear-gradient(135deg,#C49A2A 0%,#D4AF37 100%)",pillText:"#FFFFFF",
+      progressTrack:"#E8E2D4",progressFill:"linear-gradient(90deg,#C49A2A,#E8C85A)",
+      inputBg:"#F0ECE2",inputBorder:"#DDD6C6",navBg:"#FFFFFF",navBorder:"#E8E2D4",
+      tooltipBg:"#1A1708",tooltipText:"#F5F0E0",
     },
     dark: {
-      bg: "#0F0E0A", surface: "#1A1810", surfaceHover: "#222014",
-      text: "#F5F0E0", textSecondary: "#C0B898", muted: "#7A7260",
-      accent: "#FFB800", accentHover: "#FFC733",
-      accentSoft: "rgba(255,184,0,0.10)", accentBorder: "rgba(255,184,0,0.25)",
-      gradient: "linear-gradient(135deg, #FFB800 0%, #FFD54F 50%, #FFB800 100%)",
-      gradientSoft: "linear-gradient(135deg, rgba(255,184,0,0.06) 0%, rgba(255,213,79,0.10) 100%)",
-      gradientBtn: "linear-gradient(135deg, #FFB800 0%, #FFC733 50%, #E5A600 100%)",
-      green: "#22C55E", greenSoft: "rgba(34,197,94,0.12)",
-      amber: "#FF8C00", amberSoft: "rgba(255,140,0,0.12)",
-      cardBg: "#1A1810", cardBorder: "#2E2A1E", cardShadow: "0 1px 4px rgba(0,0,0,0.3)",
-      divider: "#2E2A1E",
-      pillBg: "#1A1810", pillActive: "linear-gradient(135deg, #FFB800 0%, #FFC733 100%)", pillText: "#0F0E0A",
-      streakBg: "rgba(255,184,0,0.08)", streakBorder: "rgba(255,184,0,0.18)",
-      progressTrack: "#2E2A1E", progressFill: "linear-gradient(90deg, #FFB800, #FFD54F)",
-      inputBg: "#1A1810", inputBorder: "#333020",
-      navBg: "#1A1810", navBorder: "#2E2A1E",
-      tagline: "daily jazz word games",
+      bg:"#0F0E0A",surface:"#1A1810",surfaceHover:"#222014",text:"#F5F0E0",textSecondary:"#C0B898",muted:"#7A7260",
+      accent:"#FFB800",accentHover:"#FFC733",accentSoft:"rgba(255,184,0,0.10)",accentBorder:"rgba(255,184,0,0.25)",
+      gradient:"linear-gradient(135deg,#FFB800 0%,#FFD54F 50%,#FFB800 100%)",
+      gradientSoft:"linear-gradient(135deg,rgba(255,184,0,0.06) 0%,rgba(255,213,79,0.10) 100%)",
+      gradientBtn:"linear-gradient(135deg,#FFB800 0%,#FFC733 50%,#E5A600 100%)",
+      green:"#22C55E",greenSoft:"rgba(34,197,94,0.12)",amber:"#FF8C00",amberSoft:"rgba(255,140,0,0.12)",
+      cardBg:"#1A1810",cardBorder:"#2E2A1E",cardShadow:"0 1px 4px rgba(0,0,0,0.3)",divider:"#2E2A1E",
+      pillBg:"#1A1810",pillActive:"linear-gradient(135deg,#FFB800 0%,#FFC733 100%)",pillText:"#0F0E0A",
+      progressTrack:"#2E2A1E",progressFill:"linear-gradient(90deg,#FFB800,#FFD54F)",
+      inputBg:"#1A1810",inputBorder:"#333020",navBg:"#1A1810",navBorder:"#2E2A1E",
+      tooltipBg:"#F5F0E0",tooltipText:"#0F0E0A",
     },
   },
   Rock: {
     light: {
-      bg: "#F5F5F5", surface: "#FFFFFF", surfaceHover: "#EEEEEE",
-      text: "#0A0A0A", textSecondary: "#444444", muted: "#888888",
-      accent: "#1A1A1A", accentHover: "#333333",
-      accentSoft: "rgba(26,26,26,0.07)", accentBorder: "rgba(26,26,26,0.20)",
-      gradient: "linear-gradient(135deg, #1A1A1A 0%, #444444 50%, #1A1A1A 100%)",
-      gradientSoft: "linear-gradient(135deg, rgba(26,26,26,0.04) 0%, rgba(68,68,68,0.08) 100%)",
-      gradientBtn: "linear-gradient(135deg, #1A1A1A 0%, #333333 50%, #0A0A0A 100%)",
-      green: "#22C55E", greenSoft: "rgba(34,197,94,0.10)",
-      amber: "#FF6B2D", amberSoft: "rgba(255,107,45,0.10)",
-      cardBg: "#FFFFFF", cardBorder: "#E0E0E0", cardShadow: "0 1px 4px rgba(0,0,0,0.06)",
-      divider: "#E0E0E0",
-      pillBg: "#EEEEEE", pillActive: "linear-gradient(135deg, #1A1A1A 0%, #333333 100%)", pillText: "#FFFFFF",
-      streakBg: "rgba(26,26,26,0.05)", streakBorder: "rgba(26,26,26,0.12)",
-      progressTrack: "#E0E0E0", progressFill: "linear-gradient(90deg, #1A1A1A, #555555)",
-      inputBg: "#EEEEEE", inputBorder: "#D5D5D5",
-      navBg: "#FFFFFF", navBorder: "#E0E0E0",
-      tagline: "daily rock word games",
+      bg:"#F5F5F5",surface:"#FFFFFF",surfaceHover:"#EEEEEE",text:"#0A0A0A",textSecondary:"#444444",muted:"#888888",
+      accent:"#1A1A1A",accentHover:"#333333",accentSoft:"rgba(26,26,26,0.07)",accentBorder:"rgba(26,26,26,0.20)",
+      gradient:"linear-gradient(135deg,#1A1A1A 0%,#444444 50%,#1A1A1A 100%)",
+      gradientSoft:"linear-gradient(135deg,rgba(26,26,26,0.04) 0%,rgba(68,68,68,0.08) 100%)",
+      gradientBtn:"linear-gradient(135deg,#1A1A1A 0%,#333333 50%,#0A0A0A 100%)",
+      green:"#22C55E",greenSoft:"rgba(34,197,94,0.10)",amber:"#FF6B2D",amberSoft:"rgba(255,107,45,0.10)",
+      cardBg:"#FFFFFF",cardBorder:"#E0E0E0",cardShadow:"0 1px 4px rgba(0,0,0,0.06)",divider:"#E0E0E0",
+      pillBg:"#EEEEEE",pillActive:"linear-gradient(135deg,#1A1A1A 0%,#333333 100%)",pillText:"#FFFFFF",
+      progressTrack:"#E0E0E0",progressFill:"linear-gradient(90deg,#1A1A1A,#555555)",
+      inputBg:"#EEEEEE",inputBorder:"#D5D5D5",navBg:"#FFFFFF",navBorder:"#E0E0E0",
+      tooltipBg:"#0A0A0A",tooltipText:"#F0F0F0",
     },
     dark: {
-      bg: "#0A0A0A", surface: "#151515", surfaceHover: "#1E1E1E",
-      text: "#F0F0F0", textSecondary: "#AAAAAA", muted: "#666666",
-      accent: "#F0F0F0", accentHover: "#FFFFFF",
-      accentSoft: "rgba(240,240,240,0.08)", accentBorder: "rgba(240,240,240,0.18)",
-      gradient: "linear-gradient(135deg, #E0E0E0 0%, #FFFFFF 50%, #E0E0E0 100%)",
-      gradientSoft: "linear-gradient(135deg, rgba(240,240,240,0.04) 0%, rgba(255,255,255,0.08) 100%)",
-      gradientBtn: "linear-gradient(135deg, #E0E0E0 0%, #FFFFFF 50%, #D0D0D0 100%)",
-      green: "#22C55E", greenSoft: "rgba(34,197,94,0.12)",
-      amber: "#FF6B2D", amberSoft: "rgba(255,107,45,0.12)",
-      cardBg: "#151515", cardBorder: "#262626", cardShadow: "0 1px 4px rgba(0,0,0,0.4)",
-      divider: "#262626",
-      pillBg: "#151515", pillActive: "linear-gradient(135deg, #E0E0E0 0%, #FFFFFF 100%)", pillText: "#0A0A0A",
-      streakBg: "rgba(240,240,240,0.05)", streakBorder: "rgba(240,240,240,0.12)",
-      progressTrack: "#262626", progressFill: "linear-gradient(90deg, #CCCCCC, #FFFFFF)",
-      inputBg: "#151515", inputBorder: "#2A2A2A",
-      navBg: "#151515", navBorder: "#262626",
-      tagline: "daily rock word games",
+      bg:"#0A0A0A",surface:"#151515",surfaceHover:"#1E1E1E",text:"#F0F0F0",textSecondary:"#AAAAAA",muted:"#666666",
+      accent:"#F0F0F0",accentHover:"#FFFFFF",accentSoft:"rgba(240,240,240,0.08)",accentBorder:"rgba(240,240,240,0.18)",
+      gradient:"linear-gradient(135deg,#E0E0E0 0%,#FFFFFF 50%,#E0E0E0 100%)",
+      gradientSoft:"linear-gradient(135deg,rgba(240,240,240,0.04) 0%,rgba(255,255,255,0.08) 100%)",
+      gradientBtn:"linear-gradient(135deg,#E0E0E0 0%,#FFFFFF 50%,#D0D0D0 100%)",
+      green:"#22C55E",greenSoft:"rgba(34,197,94,0.12)",amber:"#FF6B2D",amberSoft:"rgba(255,107,45,0.12)",
+      cardBg:"#151515",cardBorder:"#262626",cardShadow:"0 1px 4px rgba(0,0,0,0.4)",divider:"#262626",
+      pillBg:"#151515",pillActive:"linear-gradient(135deg,#E0E0E0 0%,#FFFFFF 100%)",pillText:"#0A0A0A",
+      progressTrack:"#262626",progressFill:"linear-gradient(90deg,#CCCCCC,#FFFFFF)",
+      inputBg:"#151515",inputBorder:"#2A2A2A",navBg:"#151515",navBorder:"#262626",
+      tooltipBg:"#F0F0F0",tooltipText:"#0A0A0A",
     },
   },
   "Pop Culture": {
     light: {
-      bg: "#F7F5FA", surface: "#FFFFFF", surfaceHover: "#F0ECFA",
-      text: "#110D1E", textSecondary: "#4B4060", muted: "#9189A8",
-      accent: "#7C5CFC", accentHover: "#6A49E8",
-      accentSoft: "rgba(124,92,252,0.08)", accentBorder: "rgba(124,92,252,0.25)",
-      gradient: "linear-gradient(135deg, #7C5CFC 0%, #A78BFA 50%, #7C5CFC 100%)",
-      gradientSoft: "linear-gradient(135deg, rgba(124,92,252,0.06) 0%, rgba(167,139,250,0.10) 100%)",
-      gradientBtn: "linear-gradient(135deg, #7C5CFC 0%, #8B6CF8 50%, #6D4AED 100%)",
-      green: "#22C55E", greenSoft: "rgba(34,197,94,0.10)",
-      amber: "#F5A623", amberSoft: "rgba(245,166,35,0.10)",
-      cardBg: "#FFFFFF", cardBorder: "#E8E4F0", cardShadow: "0 1px 4px rgba(80,50,150,0.06)",
-      divider: "#E8E4F0",
-      pillBg: "#EFEBFA", pillActive: "linear-gradient(135deg, #7C5CFC 0%, #A78BFA 100%)", pillText: "#FFFFFF",
-      streakBg: "rgba(124,92,252,0.06)", streakBorder: "rgba(124,92,252,0.15)",
-      progressTrack: "#E8E4F0", progressFill: "linear-gradient(90deg, #7C5CFC, #A78BFA)",
-      inputBg: "#EFEBFA", inputBorder: "#DDD6EE",
-      navBg: "#FFFFFF", navBorder: "#E8E4F0",
-      tagline: "daily pop culture word games",
+      bg:"#F7F5FA",surface:"#FFFFFF",surfaceHover:"#F0ECFA",text:"#110D1E",textSecondary:"#4B4060",muted:"#9189A8",
+      accent:"#7C5CFC",accentHover:"#6A49E8",accentSoft:"rgba(124,92,252,0.08)",accentBorder:"rgba(124,92,252,0.25)",
+      gradient:"linear-gradient(135deg,#7C5CFC 0%,#A78BFA 50%,#7C5CFC 100%)",
+      gradientSoft:"linear-gradient(135deg,rgba(124,92,252,0.06) 0%,rgba(167,139,250,0.10) 100%)",
+      gradientBtn:"linear-gradient(135deg,#7C5CFC 0%,#8B6CF8 50%,#6D4AED 100%)",
+      green:"#22C55E",greenSoft:"rgba(34,197,94,0.10)",amber:"#F5A623",amberSoft:"rgba(245,166,35,0.10)",
+      cardBg:"#FFFFFF",cardBorder:"#E8E4F0",cardShadow:"0 1px 4px rgba(80,50,150,0.06)",divider:"#E8E4F0",
+      pillBg:"#EFEBFA",pillActive:"linear-gradient(135deg,#7C5CFC 0%,#A78BFA 100%)",pillText:"#FFFFFF",
+      progressTrack:"#E8E4F0",progressFill:"linear-gradient(90deg,#7C5CFC,#A78BFA)",
+      inputBg:"#EFEBFA",inputBorder:"#DDD6EE",navBg:"#FFFFFF",navBorder:"#E8E4F0",
+      tooltipBg:"#110D1E",tooltipText:"#F0ECF8",
     },
     dark: {
-      bg: "#0D0B14", surface: "#16132A", surfaceHover: "#1E1A36",
-      text: "#F0ECF8", textSecondary: "#B0A8C8", muted: "#6A6280",
-      accent: "#A78BFA", accentHover: "#B99FFF",
-      accentSoft: "rgba(167,139,250,0.10)", accentBorder: "rgba(167,139,250,0.25)",
-      gradient: "linear-gradient(135deg, #A78BFA 0%, #C4B5FD 50%, #A78BFA 100%)",
-      gradientSoft: "linear-gradient(135deg, rgba(167,139,250,0.06) 0%, rgba(196,181,253,0.10) 100%)",
-      gradientBtn: "linear-gradient(135deg, #A78BFA 0%, #B99FFF 50%, #9575F5 100%)",
-      green: "#22C55E", greenSoft: "rgba(34,197,94,0.12)",
-      amber: "#FBBF24", amberSoft: "rgba(251,191,36,0.12)",
-      cardBg: "#16132A", cardBorder: "#2A2548", cardShadow: "0 1px 4px rgba(0,0,0,0.3)",
-      divider: "#2A2548",
-      pillBg: "#16132A", pillActive: "linear-gradient(135deg, #A78BFA 0%, #C4B5FD 100%)", pillText: "#0D0B14",
-      streakBg: "rgba(167,139,250,0.08)", streakBorder: "rgba(167,139,250,0.15)",
-      progressTrack: "#2A2548", progressFill: "linear-gradient(90deg, #A78BFA, #C4B5FD)",
-      inputBg: "#16132A", inputBorder: "#332E52",
-      navBg: "#16132A", navBorder: "#2A2548",
-      tagline: "daily pop culture word games",
+      bg:"#0D0B14",surface:"#16132A",surfaceHover:"#1E1A36",text:"#F0ECF8",textSecondary:"#B0A8C8",muted:"#6A6280",
+      accent:"#A78BFA",accentHover:"#B99FFF",accentSoft:"rgba(167,139,250,0.10)",accentBorder:"rgba(167,139,250,0.25)",
+      gradient:"linear-gradient(135deg,#A78BFA 0%,#C4B5FD 50%,#A78BFA 100%)",
+      gradientSoft:"linear-gradient(135deg,rgba(167,139,250,0.06) 0%,rgba(196,181,253,0.10) 100%)",
+      gradientBtn:"linear-gradient(135deg,#A78BFA 0%,#B99FFF 50%,#9575F5 100%)",
+      green:"#22C55E",greenSoft:"rgba(34,197,94,0.12)",amber:"#FBBF24",amberSoft:"rgba(251,191,36,0.12)",
+      cardBg:"#16132A",cardBorder:"#2A2548",cardShadow:"0 1px 4px rgba(0,0,0,0.3)",divider:"#2A2548",
+      pillBg:"#16132A",pillActive:"linear-gradient(135deg,#A78BFA 0%,#C4B5FD 100%)",pillText:"#0D0B14",
+      progressTrack:"#2A2548",progressFill:"linear-gradient(90deg,#A78BFA,#C4B5FD)",
+      inputBg:"#16132A",inputBorder:"#332E52",navBg:"#16132A",navBorder:"#2A2548",
+      tooltipBg:"#F0ECF8",tooltipText:"#0D0B14",
     },
   },
 };
 
-// ── SVG Icons ──────────────────────────────────────────────────
-
-const IconCrossword = ({ color, size = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.4">
-    <rect x="2" y="2" width="20" height="20" rx="2" />
-    <line x1="2" y1="8.67" x2="22" y2="8.67" /><line x1="2" y1="15.33" x2="22" y2="15.33" />
-    <line x1="8.67" y1="2" x2="8.67" y2="22" /><line x1="15.33" y1="2" x2="15.33" y2="22" />
-    <rect x="15.33" y="2" width="6.67" height="6.67" fill={color} opacity="0.12" />
-    <rect x="2" y="15.33" width="6.67" height="6.67" fill={color} opacity="0.12" />
-  </svg>
-);
-const IconGrid = ({ color, size = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round">
-    <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
-    <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" fill={color} opacity="0.12" />
-  </svg>
-);
-const IconTile = ({ color, size = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <rect x="3" y="3" width="18" height="18" rx="3" stroke={color} strokeWidth="1.6" />
-    <text x="12" y="16.5" textAnchor="middle" fill={color} fontSize="12" fontWeight="600" fontFamily="'Spline Sans',sans-serif">R</text>
-  </svg>
-);
-const IconWave = ({ color, size = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-    <line x1="4" y1="9" x2="4" y2="15" /><line x1="8" y1="5.5" x2="8" y2="18.5" />
-    <line x1="12" y1="10" x2="12" y2="14" /><line x1="16" y1="3.5" x2="16" y2="20.5" />
-    <line x1="20" y1="8" x2="20" y2="16" />
-  </svg>
-);
-const IconNote = ({ color, size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 18V5l12-2v13" />
-    <circle cx="6" cy="18" r="3" fill={color} opacity="0.3" stroke={color} />
-    <circle cx="18" cy="16" r="3" fill={color} opacity="0.3" stroke={color} />
-  </svg>
-);
-const IconBolt = ({ color, size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
-);
-const IconArrow = ({ color, size = 16, dir = "right" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round"
-    style={dir === "left" ? { transform: "rotate(180deg)" } : {}}>
-    <line x1="5" y1="12" x2="19" y2="12" /><polyline points="14 7 19 12 14 17" />
-  </svg>
-);
-const IconLock = ({ color, size = 11 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-    <rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 018 0v4" />
-  </svg>
-);
-const IconSun = ({ color, size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round">
-    <circle cx="12" cy="12" r="4.5" />
-    <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
-    <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" /><line x1="17.66" y1="17.66" x2="19.78" y2="19.78" />
-    <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
-    <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" /><line x1="17.66" y1="6.34" x2="19.78" y2="4.22" />
-  </svg>
-);
-const IconMoon = ({ color, size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round">
-    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-  </svg>
-);
-const IconHelp = ({ color, size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round">
-    <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-const IconBar = ({ color, size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-    <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
-  </svg>
-);
-const IconUser = ({ color, size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round">
-    <circle cx="12" cy="8" r="4" /><path d="M20 21a8 8 0 10-16 0" />
-  </svg>
-);
-const IconCheck = ({ color, size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-const IconPlay = ({ color, size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M8 5v14l11-7z" /></svg>
-);
-const IconCalendar = ({ color, size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round">
-    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-  </svg>
-);
-const IconChevron = ({ color, size = 20, dir = "left" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-    {dir === "left" ? <polyline points="15 18 9 12 15 6" /> : <polyline points="9 6 15 12 9 18" />}
-  </svg>
-);
-const IconGear = ({ color, size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-  </svg>
-);
-const IconClock = ({ color, size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round">
-    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-const IconTrophy = ({ color, size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2" /><path d="M18 9h2a2 2 0 002-2V5a2 2 0 00-2-2h-2" />
-    <path d="M6 3h12v7a6 6 0 01-12 0V3z" /><path d="M9 21h6" /><path d="M12 16v5" />
-  </svg>
-);
-
-// ── Helpers ────────────────────────────────────────────────────
-
-const f = (weight = 400, size = 14) => ({
-  fontFamily: "'Spline Sans', -apple-system, BlinkMacSystemFont, sans-serif",
-  fontWeight: weight, fontSize: size, lineHeight: 1.45,
-});
-
-function getMusicalGreeting() {
-  const h = new Date().getHours();
-  if (h < 6) return "Late night session";
-  if (h < 12) return "Morning warm-up";
-  if (h < 17) return "Afternoon jam";
-  if (h < 21) return "Evening set";
-  return "Late night session";
-}
-
-const SCREENS = {
-  HOME: "home", CROSSWORDS: "crosswords", SOLO: "solo", MINI: "mini", GROOVE: "groove",
-  STATS: "stats", SHARE: "share", AUTH: "auth",
-  PROFILE: "profile", SETTINGS: "settings", HOW_TO_PLAY: "how_to_play", ARCHIVE: "archive",
+// ── SVG Icons ──
+const I = {
+  Note: ({c,s=18}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3" fill={c} opacity=".3" stroke={c}/><circle cx="18" cy="16" r="3" fill={c} opacity=".3" stroke={c}/></svg>,
+  Cross: ({c,s=22}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.4"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="2" y1="8.67" x2="22" y2="8.67"/><line x1="2" y1="15.33" x2="22" y2="15.33"/><line x1="8.67" y1="2" x2="8.67" y2="22"/><line x1="15.33" y1="2" x2="15.33" y2="22"/><rect x="15.33" y="2" width="6.67" height="6.67" fill={c} opacity=".12"/><rect x="2" y="15.33" width="6.67" height="6.67" fill={c} opacity=".12"/></svg>,
+  Grid: ({c,s=22}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5" fill={c} opacity=".12"/></svg>,
+  Tile: ({c,s=22}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke={c} strokeWidth="1.6"/><text x="12" y="16.5" textAnchor="middle" fill={c} fontSize="12" fontWeight="600" fontFamily="'Spline Sans',sans-serif">R</text></svg>,
+  Wave: ({c,s=22}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round"><line x1="4" y1="9" x2="4" y2="15"/><line x1="8" y1="5.5" x2="8" y2="18.5"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="16" y1="3.5" x2="16" y2="20.5"/><line x1="20" y1="8" x2="20" y2="16"/></svg>,
+  Arrow: ({c,s=16,dir="right"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" style={dir==="left"?{transform:"rotate(180deg)"}:{}}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="14 7 19 12 14 17"/></svg>,
+  Sun: ({c,s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="12" r="4.5"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/></svg>,
+  Moon: ({c,s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
+  Help: ({c,s=20}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  Bar: ({c,s=20}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  User: ({c,s=20}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>,
+  Check: ({c,s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  Play: ({c,s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill={c}><path d="M8 5v14l11-7z"/></svg>,
+  Cal: ({c,s=18}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  Chev: ({c,s=20,dir="left"}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round">{dir==="left"?<polyline points="15 18 9 12 15 6"/>:<polyline points="9 6 15 12 9 18"/>}</svg>,
+  Info: ({c,s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+  Home: ({c,s=20}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  Gear: ({c,s=20}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>,
+  Trophy: ({c,s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2"/><path d="M18 9h2a2 2 0 002-2V5a2 2 0 00-2-2h-2"/><path d="M6 3h12v7a6 6 0 01-12 0V3z"/><path d="M9 21h6"/><path d="M12 16v5"/></svg>,
+  Clock: ({c,s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  Spotify: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>,
 };
 
-// ── Main App ───────────────────────────────────────────────────
-
-// ── Trivia data per genre ──────────────────────────────────────
+// ── Trivia (different per screen) ──
 const TRIVIA = {
-  Jazz: [
-    "John Coltrane practiced for 12 hours a day, sometimes falling asleep with the saxophone still in his mouth.",
-    "Miles Davis recorded 'Kind of Blue' in just two sessions at Columbia's 30th Street Studio in 1959.",
-    "Thelonious Monk would sometimes stand up from the piano mid-performance and dance in circles.",
-    "The word 'jazz' first appeared in print in 1912 in a Los Angeles newspaper — as a baseball term.",
+  Jazz: {
+    crosswords: "John Coltrane practiced for 12 hours a day, sometimes falling asleep with the saxophone still in his mouth.",
+    solo: "Miles Davis recorded 'Kind of Blue' in just two sessions at Columbia's 30th Street Studio in 1959.",
+    mini: "Thelonious Monk would sometimes stand up from the piano mid-performance and dance in circles.",
+    groove: "The word 'jazz' first appeared in print in 1912 in a Los Angeles newspaper — as a baseball term.",
+  },
+  Rock: {
+    crosswords: "Led Zeppelin's 'Stairway to Heaven' was never released as a single, yet it's one of the most requested radio songs.",
+    solo: "The Beatles hold the record for most number-one hits on the Billboard Hot 100 with 20 songs.",
+    mini: "Jimi Hendrix was self-taught and couldn't read music. He played a right-handed guitar flipped upside down.",
+    groove: "Pink Floyd's 'The Dark Side of the Moon' spent 937 weeks on the Billboard 200 chart.",
+  },
+  "Pop Culture": {
+    crosswords: "Beyonce's 'Lemonade' was the first album to debut at #1 with all songs charting on the Hot 100.",
+    solo: "Taylor Swift is the only artist to have five albums sell over one million copies in their first week.",
+    mini: "Billie Eilish recorded her debut album entirely in her brother's small bedroom.",
+    groove: "Drake holds the record for most songs to chart on the Billboard Hot 100 simultaneously — 27 songs.",
+  },
+};
+const SPOTIFY = {
+  Jazz: {name:"Jazz Essentials",desc:"Coltrane, Davis, Monk and more"},
+  Rock: {name:"Classic Rock Legends",desc:"Zeppelin, Floyd, Hendrix and more"},
+  "Pop Culture": {name:"Pop Hits Today",desc:"Beyonce, Drake, Swift and more"},
+};
+const DIFF_DESC = {
+  Beginner:"Easier clues, common words",
+  Standard:"Mixed difficulty, genre knowledge helps",
+  Expert:"Obscure terms, fewer hints",
+  Legendary:"No hints, deep genre knowledge required",
+};
+
+// ── Helpers ──
+const f = (w=400,s=14) => ({fontFamily:"'Spline Sans',-apple-system,BlinkMacSystemFont,sans-serif",fontWeight:w,fontSize:s,lineHeight:1.45});
+function getGreeting(){const h=new Date().getHours();if(h<6)return"Late night session";if(h<12)return"Morning warm-up";if(h<17)return"Afternoon jam";if(h<21)return"Evening set";return"Late night session";}
+
+const SCREENS = {HOME:"home",CROSSWORDS:"crosswords",SOLO:"solo",MINI:"mini",GROOVE:"groove",STATS:"stats",SHARE:"share",AUTH:"auth",PROFILE:"profile",SETTINGS:"settings",HOW:"how",ARCHIVE:"archive"};
+
+// ── CROSSWORD DATA ──
+const CW_GRID = [
+  ["C","O","L","T","R","A","N"],
+  ["H","#","E","#","I","#","O"],
+  ["O","C","T","A","V","E","T"],
+  ["R","#","S","#","E","#","E"],
+  ["D","U","O","N","R","I","S"],
+  ["S","#","N","#","B","#","#"],
+  ["J","A","Z","Z","I","N","G"],
+];
+const CW_NUMS = {0:{0:1,2:2},2:{0:3,1:4},4:{0:5,1:6},6:{0:7}};
+const CW_CLUES = {
+  across:[
+    {n:"1A",clue:"Legendary saxophonist John ___",hint:"His album 'A Love Supreme' changed jazz",ans:"COLTRAN"},
+    {n:"3A",clue:"Musical interval of 8 notes",hint:"From C to next C",ans:"OCTAVE"},
+    {n:"5A",clue:"Two musicians playing together",hint:"Smaller than a trio",ans:"DUONRIS"},
+    {n:"7A",clue:"Improvising rhythmically",hint:"What a jazz musician does in the groove",ans:"JAZZING"},
   ],
-  Rock: [
-    "Led Zeppelin's 'Stairway to Heaven' was never released as a single, yet it's one of the most requested songs in radio history.",
-    "The Beatles hold the record for most number-one hits on the Billboard Hot 100 with 20 songs.",
-    "Jimi Hendrix was self-taught and couldn't read music. He played a right-handed guitar flipped upside down.",
-    "Pink Floyd's 'The Dark Side of the Moon' spent 937 weeks on the Billboard 200 chart.",
-  ],
-  "Pop Culture": [
-    "Beyonce's 'Lemonade' was the first album to debut at #1 with all songs charting on the Hot 100.",
-    "Taylor Swift is the only artist to have five albums sell over one million copies in their first week.",
-    "Billie Eilish recorded her debut album 'When We All Fall Asleep' entirely in her brother's small bedroom.",
-    "Drake holds the record for most songs to chart on the Billboard Hot 100 simultaneously — 27 songs.",
+  down:[
+    {n:"1D",clue:"___ progression (music)",hint:"A sequence of harmonies",ans:"CHORDSJ"},
+    {n:"2D",clue:"Musical time division",hint:"Eight of these in a whole note",ans:"LETSONZ"},
+    {n:"4D",clue:"Performed without preparation",hint:"A jazz specialty",ans:"AANING"},
   ],
 };
 
-// ── Spotify playlists per genre ────────────────────────────────
-const SPOTIFY_PLAYLISTS = {
-  Jazz: { name: "Jazz Essentials", desc: "Coltrane, Davis, Monk and more" },
-  Rock: { name: "Classic Rock Legends", desc: "Zeppelin, Floyd, Hendrix and more" },
-  "Pop Culture": { name: "Pop Hits Today", desc: "Beyonce, Drake, Swift and more" },
+// ── MINI DATA ──
+const MINI_GRID = [
+  ["M","I","L","E","S"],
+  ["O","#","A","#","W"],
+  ["N","O","T","E","S"],
+  ["K","#","I","#","E"],
+  ["B","L","N","D","T"],
+];
+const MINI_NUMS = {0:{0:1},2:{0:2,1:3},4:{0:4,1:5}};
+const MINI_CLUES = {
+  across:[
+    {n:"1A",clue:"Jazz trumpet legend Davis",hint:"First name, not last",ans:"MILES"},
+    {n:"2A",clue:"Musical sounds",hint:"Written on a staff",ans:"NOTES"},
+    {n:"4A",clue:"Visually unclear",hint:"Opposite of sharp",ans:"BLNDT"},
+  ],
+  down:[
+    {n:"1D",clue:"Thelonious ___",hint:"Jazz pianist, unique style",ans:"MONKB"},
+    {n:"3D",clue:"Like a musical line",hint:"Not rhythm, but ___",ans:"LATIN"},
+  ],
 };
 
+// ── SOLO WORD ──
+const SOLO_WORD = "BLUES";
+
+// ── GROOVE WORDS ──
+const GROOVE_LETTERS = "COLTRANEDSAXBASSRIFFMONKDRUMSETCOMPGROOVEJZ".padEnd(64,"A").split("");
+const GROOVE_WORDS = ["COLTRANE","SAX","MONK","BASS","DRUMS","RIFF","COMP","GROOVE"];
+
+// ═══════ MAIN APP ═══════
 function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [screen, setScreen] = useState(SCREENS.HOME);
@@ -331,781 +245,766 @@ function App() {
   const [difficulty, setDifficulty] = useState("Beginner");
   const [history, setHistory] = useState([]);
 
-  const navigate = (s) => { setHistory(prev => [...prev, screen]); setScreen(s); };
+  // Timer
+  const [timerSec, setTimerSec] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const timerRef = useRef(null);
+  useEffect(() => {
+    if (timerRunning) {
+      timerRef.current = setInterval(() => setTimerSec(s => s + 1), 1000);
+    } else { clearInterval(timerRef.current); }
+    return () => clearInterval(timerRef.current);
+  }, [timerRunning]);
+  const fmtTime = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+
+  // Crossword state
+  const [cwCells, setCwCells] = useState(() => CW_GRID.map(r => r.map(c => c === "#" ? "#" : "")));
+  const [cwActive, setCwActive] = useState([0,0]);
+  const [cwDir, setCwDir] = useState("across");
+  const [cwRevealed, setCwRevealed] = useState(false);
+
+  // Mini state
+  const [miniCells, setMiniCells] = useState(() => MINI_GRID.map(r => r.map(c => c === "#" ? "#" : "")));
+  const [miniActive, setMiniActive] = useState([0,0]);
+  const [miniDir, setMiniDir] = useState("across");
+
+  // Solo state
+  const [soloGuesses, setSoloGuesses] = useState([]);
+  const [soloCurrent, setSoloCurrent] = useState("");
+  const [soloGameOver, setSoloGameOver] = useState(false);
+
+  // Groove state
+  const [grooveSelected, setGrooveSelected] = useState([]);
+  const [grooveFound, setGrooveFound] = useState([]);
+  const [grooveWrong, setGrooveWrong] = useState(false);
+
+  // Stats page state (must be at top level for hooks rules)
+  const [statsTab, setStatsTab] = useState("overview");
+
+  const navigate = (s) => {
+    setHistory(prev => [...prev, screen]);
+    setScreen(s);
+    // Start timer when entering a game
+    if (["crosswords","solo","mini","groove"].includes(s)) {
+      setTimerSec(0); setTimerRunning(true);
+    } else { setTimerRunning(false); }
+  };
   const goBack = () => {
     const prev = history.length > 0 ? history[history.length - 1] : SCREENS.HOME;
     setHistory(h => h.slice(0, -1));
     setScreen(prev);
+    setTimerRunning(false);
   };
 
   const t = darkMode ? GENRE_THEMES[genre].dark : GENRE_THEMES[genre].light;
-
   const today = new Date();
   const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const dateStr = `${days[today.getDay()]}, ${months[today.getMonth()]} ${today.getDate()}`;
-
-  // Genre label: "Riff Jazz" / "Riff Rock" / "Riff Pop Culture"
-  const genreName = genre;
-  const genreLabel = `Riff ${genreName}`;
+  const genreLabel = `Riff ${genre}`;
 
   const games = [
-    { id: "crosswords", name: "Crosswords", desc: "Full 11x11 themed crossword", icon: IconCrossword, time: "~15 min", screen: SCREENS.CROSSWORDS },
-    { id: "groove", name: "Groove", desc: "Find 8 hidden words", icon: IconWave, time: "~5 min", screen: SCREENS.GROOVE },
-    { id: "solo", name: "Solo", desc: "Guess the word in 6 tries", icon: IconTile, time: "~3 min", screen: SCREENS.SOLO },
-    { id: "mini", name: "Mini", desc: "5x5 quick crossword", icon: IconGrid, time: "~2 min", screen: SCREENS.MINI },
+    {id:"crosswords",name:"Crosswords",desc:"Full themed crossword",icon:I.Cross,time:"~15 min",scr:SCREENS.CROSSWORDS},
+    {id:"groove",name:"Groove",desc:"Find 8 hidden words",icon:I.Wave,time:"~5 min",scr:SCREENS.GROOVE},
+    {id:"solo",name:"Solo",desc:"Guess the word in 6 tries",icon:I.Tile,time:"~3 min",scr:SCREENS.SOLO},
+    {id:"mini",name:"Mini",desc:"5x5 quick crossword",icon:I.Grid,time:"~2 min",scr:SCREENS.MINI},
   ];
 
-  // ── Shell wrapper ──
-  const Shell = ({ children, title, showBack = true, noPad = false }) => (
-    <div style={{ minHeight: "100vh", background: t.bg, transition: "background 0.35s ease", ...f() }}>
-      <div style={{ maxWidth: 420, margin: "0 auto", paddingBottom: 60 }}>
-        {showBack && (
-          <div style={{ display: "flex", alignItems: "center", padding: "14px 20px 0", gap: 8 }}>
-            <button onClick={goBack} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex" }}>
-              <IconChevron color={t.accent} size={22} dir="left" />
+  // ── Bottom Nav (all pages except home) ──
+  const BottomNav = () => (
+    <div style={{position:"fixed",bottom:0,left:0,right:0,background:t.navBg,borderTop:`1px solid ${t.navBorder}`,display:"flex",justifyContent:"center",zIndex:100}}>
+      <div style={{display:"flex",maxWidth:420,width:"100%",justifyContent:"space-around",padding:"8px 0 12px"}}>
+        {[
+          {icon:I.Home,label:"Home",scr:SCREENS.HOME},
+          {icon:I.Bar,label:"Stats",scr:SCREENS.STATS},
+          {icon:I.Cal,label:"Archive",scr:SCREENS.ARCHIVE},
+          {icon:I.User,label:"Profile",scr:SCREENS.PROFILE},
+        ].map(item => {
+          const active = screen === item.scr;
+          return (
+            <button key={item.label} onClick={() => {setHistory(h=>[...h,screen]);setScreen(item.scr);setTimerRunning(false);}} style={{
+              background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"4px 12px",
+            }}>
+              <item.icon c={active ? t.accent : t.muted} s={20} />
+              <span style={{...f(active?600:400,9),color:active?t.accent:t.muted}}>{item.label}</span>
             </button>
-            {title && <span style={{ ...f(600, 16), color: t.text }}>{title}</span>}
-          </div>
-        )}
-        {children}
+          );
+        })}
       </div>
     </div>
   );
 
-  // ── Toggle component ──
-  const Toggle = ({ on }) => (
-    <div style={{
-      width: 40, height: 24, borderRadius: 12, position: "relative", cursor: "pointer",
-      background: on ? t.accent : (darkMode ? "#333" : "#D0D0D0"), transition: "background 0.2s", flexShrink: 0,
-    }}>
-      <div style={{
-        width: 18, height: 18, borderRadius: 9, background: "#FFF", position: "absolute",
-        top: 3, left: on ? 19 : 3, transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-      }} />
+  // ── Shell wrapper ──
+  const Shell = ({children,title,showBack=true}) => (
+    <div style={{minHeight:"100vh",background:t.bg,transition:"background 0.35s ease",...f()}}>
+      <div style={{maxWidth:420,margin:"0 auto",paddingBottom:70}}>
+        {showBack && (
+          <div style={{display:"flex",alignItems:"center",padding:"14px 20px 0",gap:8}}>
+            <button onClick={goBack} style={{background:"none",border:"none",padding:4,display:"flex"}}><I.Chev c={t.accent} s={22} dir="left"/></button>
+            {title && <span style={{...f(600,16),color:t.text}}>{title}</span>}
+          </div>
+        )}
+        {children}
+      </div>
+      <BottomNav />
     </div>
   );
 
-  // ═════════════════════════════════════════════
-  // HOME
-  // ═════════════════════════════════════════════
-  if (screen === SCREENS.HOME) return (
-    <div style={{ minHeight: "100vh", background: t.bg, transition: "background 0.35s", ...f(), overflow: "hidden" }}>
-      <div style={{ maxWidth: 420, margin: "0 auto", paddingBottom: 80, position: "relative" }}>
+  // ── Trivia Box ──
+  const TriviaBox = ({gameKey}) => {
+    const tri = (TRIVIA[genre] || TRIVIA.Jazz)[gameKey] || "Music trivia coming soon.";
+    return (
+      <div style={{margin:"14px 20px",padding:"14px 16px",background:t.accentSoft,border:`1px solid ${t.accentBorder}`,borderRadius:12}}>
+        <div style={{...f(600,11),color:t.accent,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}>Did you know?</div>
+        <div style={{...f(400,13),color:t.text,lineHeight:1.5}}>{tri}</div>
+      </div>
+    );
+  };
 
-        {/* Top bar — no streak badge, just help + stats + profile */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px 0", position: "relative", zIndex: 1 }}>
-          <button onClick={() => navigate(SCREENS.HOW_TO_PLAY)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-            <IconHelp color={t.muted} size={20} />
-          </button>
-          <div style={{ display: "flex", gap: 4 }}>
-            <button onClick={() => navigate(SCREENS.STATS)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-              <IconBar color={t.muted} size={20} />
+  // ── Spotify Invite ──
+  const SpotifyInvite = () => {
+    const pl = SPOTIFY[genre] || SPOTIFY.Jazz;
+    return (
+      <div style={{margin:"0 20px 20px",padding:"12px 16px",background:t.greenSoft,border:`1px solid ${t.green}40`,borderRadius:12,display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
+        <I.Play c={t.green} s={16}/>
+        <div style={{flex:1}}>
+          <div style={{...f(500,13),color:t.green}}>{pl.name}</div>
+          <div style={{...f(400,11),color:t.green,opacity:.7}}>{pl.desc}</div>
+        </div>
+        <I.Spotify />
+      </div>
+    );
+  };
+
+  // ── Clue Row with info icon hint ──
+  const ClueRow = ({clue,hint}) => {
+    const [showHint,setShowHint] = useState(false);
+    const canHint = difficulty !== "Legendary";
+    return (
+      <div style={{padding:"6px 0",borderBottom:`1px solid ${t.divider}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{...f(400,13),color:t.text,flex:1}}>{clue}</span>
+          {canHint && (
+            <button onClick={() => setShowHint(!showHint)} style={{background:"none",border:"none",padding:2,display:"flex",opacity:showHint?.8:.4,transition:"opacity 0.2s"}}>
+              <I.Info c={t.accent} s={16}/>
             </button>
-            <button onClick={() => navigate(SCREENS.PROFILE)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
-              <IconUser color={t.muted} size={20} />
-            </button>
+          )}
+        </div>
+        {showHint && hint && (
+          <div style={{...f(400,11),color:t.amber,marginTop:4,paddingLeft:8,borderLeft:`2px solid ${t.amber}40`}}>{hint}</div>
+        )}
+      </div>
+    );
+  };
+
+  // ── Toggle ──
+  const Toggle = ({on}) => (
+    <div style={{width:40,height:24,borderRadius:12,position:"relative",background:on?t.accent:(darkMode?"#333":"#D0D0D0"),transition:"background 0.2s",flexShrink:0}}>
+      <div style={{width:18,height:18,borderRadius:9,background:"#FFF",position:"absolute",top:3,left:on?19:3,transition:"left 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
+    </div>
+  );
+
+  // ═══════ CROSSWORD LOGIC ═══════
+  const handleCwKey = useCallback((e) => {
+    if (screen !== SCREENS.CROSSWORDS) return;
+    const [r,c] = cwActive;
+    const key = e.key.toUpperCase();
+    if (key === "BACKSPACE") {
+      setCwCells(prev => {const n=[...prev.map(r=>[...r])];n[r][c]="";return n;});
+      // Move back
+      if (cwDir==="across" && c > 0) setCwActive([r,c-1]);
+      if (cwDir==="down" && r > 0) setCwActive([r-1,c]);
+    } else if (key === "TAB") {
+      e.preventDefault();
+      setCwDir(d => d === "across" ? "down" : "across");
+    } else if (/^[A-Z]$/.test(key)) {
+      setCwCells(prev => {const n=[...prev.map(r=>[...r])];n[r][c]=key;return n;});
+      // Advance
+      if (cwDir==="across" && c < 6) setCwActive([r,c+1]);
+      if (cwDir==="down" && r < 6) setCwActive([r+1,c]);
+    } else if (key === "ARROWLEFT") setCwActive([r,Math.max(0,c-1)]);
+    else if (key === "ARROWRIGHT") setCwActive([r,Math.min(6,c+1)]);
+    else if (key === "ARROWUP") setCwActive([Math.max(0,r-1),c]);
+    else if (key === "ARROWDOWN") setCwActive([Math.min(6,r+1),c]);
+  }, [screen, cwActive, cwDir]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleCwKey);
+    return () => window.removeEventListener("keydown", handleCwKey);
+  }, [handleCwKey]);
+
+  const cwCheck = () => {
+    // Highlight correct/incorrect
+    setCwCells(prev => {
+      return prev.map((row,ri) => row.map((cell,ci) => {
+        if (cell === "#") return "#";
+        if (cell === CW_GRID[ri][ci]) return cell;
+        return cell; // keep as-is, user sees
+      }));
+    });
+  };
+  const cwReveal = () => {
+    setCwCells(CW_GRID.map(r => [...r]));
+    setCwRevealed(true);
+    setTimerRunning(false);
+  };
+  const cwClear = () => {
+    setCwCells(CW_GRID.map(r => r.map(c => c === "#" ? "#" : "")));
+    setCwRevealed(false);
+  };
+
+  // ═══════ SOLO LOGIC ═══════
+  const handleSoloKey = useCallback((letter) => {
+    if (soloGameOver) return;
+    if (letter === "Del") {
+      setSoloCurrent(c => c.slice(0,-1));
+    } else if (letter === "Enter") {
+      if (soloCurrent.length === 5) {
+        const guess = soloCurrent.toUpperCase();
+        const result = guess.split("").map((ch,i) => {
+          if (ch === SOLO_WORD[i]) return "correct";
+          if (SOLO_WORD.includes(ch)) return "present";
+          return "absent";
+        });
+        setSoloGuesses(prev => [...prev, {letters: guess.split(""), colors: result}]);
+        setSoloCurrent("");
+        if (guess === SOLO_WORD || soloGuesses.length >= 5) {
+          setSoloGameOver(true);
+          setTimerRunning(false);
+        }
+      }
+    } else if (soloCurrent.length < 5) {
+      setSoloCurrent(c => c + letter.toUpperCase());
+    }
+  }, [soloCurrent, soloGuesses, soloGameOver]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (screen !== SCREENS.SOLO) return;
+      const k = e.key;
+      if (k === "Backspace") handleSoloKey("Del");
+      else if (k === "Enter") handleSoloKey("Enter");
+      else if (/^[a-zA-Z]$/.test(k)) handleSoloKey(k.toUpperCase());
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [screen, handleSoloKey]);
+
+  const soloKeyColors = {};
+  soloGuesses.forEach(g => {
+    g.letters.forEach((l,i) => {
+      const c = g.colors[i];
+      if (c === "correct") soloKeyColors[l] = "correct";
+      else if (c === "present" && soloKeyColors[l] !== "correct") soloKeyColors[l] = "present";
+      else if (!soloKeyColors[l]) soloKeyColors[l] = "absent";
+    });
+  });
+
+  // ═══════ GROOVE LOGIC ═══════
+  const handleGrooveCell = (idx) => {
+    if (grooveSelected.includes(idx)) {
+      setGrooveSelected(s => s.filter(i => i !== idx));
+    } else {
+      setGrooveSelected(s => [...s, idx]);
+    }
+    setGrooveWrong(false);
+  };
+  const handleGrooveSubmit = () => {
+    const selectedWord = grooveSelected.map(i => GROOVE_LETTERS[i]).join("");
+    const match = GROOVE_WORDS.find(w => w === selectedWord);
+    if (match && !grooveFound.includes(match)) {
+      setGrooveFound(f => [...f, match]);
+      setGrooveSelected([]);
+      if (grooveFound.length + 1 === GROOVE_WORDS.length) setTimerRunning(false);
+    } else {
+      setGrooveWrong(true);
+      setTimeout(() => { setGrooveSelected([]); setGrooveWrong(false); }, 600);
+    }
+  };
+
+  // ═══════ MINI LOGIC ═══════
+  const handleMiniKey = useCallback((e) => {
+    if (screen !== SCREENS.MINI) return;
+    const [r,c] = miniActive;
+    const key = e.key.toUpperCase();
+    if (key === "BACKSPACE") {
+      setMiniCells(prev => {const n=prev.map(r=>[...r]);n[r][c]="";return n;});
+      if (miniDir==="across" && c > 0) setMiniActive([r,c-1]);
+      if (miniDir==="down" && r > 0) setMiniActive([r-1,c]);
+    } else if (key === "TAB") {
+      e.preventDefault();
+      setMiniDir(d => d === "across" ? "down" : "across");
+    } else if (/^[A-Z]$/.test(key)) {
+      setMiniCells(prev => {const n=prev.map(r=>[...r]);n[r][c]=key;return n;});
+      if (miniDir==="across" && c < 4) setMiniActive([r,c+1]);
+      if (miniDir==="down" && r < 4) setMiniActive([r+1,c]);
+    } else if (key === "ARROWLEFT") setMiniActive([r,Math.max(0,c-1)]);
+    else if (key === "ARROWRIGHT") setMiniActive([r,Math.min(4,c+1)]);
+    else if (key === "ARROWUP") setMiniActive([Math.max(0,r-1),c]);
+    else if (key === "ARROWDOWN") setMiniActive([Math.min(4,r+1),c]);
+  }, [screen, miniActive, miniDir]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleMiniKey);
+    return () => window.removeEventListener("keydown", handleMiniKey);
+  }, [handleMiniKey]);
+
+  // ═══════ HOME ═══════
+  if (screen === SCREENS.HOME) return (
+    <div style={{minHeight:"100vh",background:t.bg,transition:"background 0.35s",...f(),overflow:"hidden"}}>
+      <div style={{maxWidth:420,margin:"0 auto",paddingBottom:80,position:"relative"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 20px 0",position:"relative",zIndex:1}}>
+          <button onClick={() => navigate(SCREENS.HOW)} style={{background:"none",border:"none",padding:4}}><I.Help c={t.muted}/></button>
+          <div style={{display:"flex",gap:4}}>
+            <button onClick={() => navigate(SCREENS.STATS)} style={{background:"none",border:"none",padding:4}}><I.Bar c={t.muted}/></button>
+            <button onClick={() => navigate(SCREENS.PROFILE)} style={{background:"none",border:"none",padding:4}}><I.User c={t.muted}/></button>
           </div>
         </div>
 
-        {/* Header — "Riff Jazz" line 1 + music icon, "Word Games" line 2 */}
-        <header style={{ textAlign: "center", padding: "24px 20px 0", position: "relative", zIndex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-            <IconNote color={t.accent} size={22} />
-            <h1 style={{ ...f(700, 38), margin: 0, lineHeight: 1, letterSpacing: "-0.03em",
-              background: t.gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-            }}>{genreLabel}</h1>
+        <header style={{textAlign:"center",padding:"24px 20px 0",position:"relative",zIndex:1}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <I.Note c={t.accent} s={22}/>
+            <h1 className="grad-text" style={{...f(700,36),margin:0,lineHeight:1,letterSpacing:"-0.03em",background:t.gradient,display:"inline-block"}}>{genreLabel}</h1>
           </div>
-          <p style={{ ...f(500, 13), color: t.muted, marginTop: 6, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-            Word Games
-          </p>
-          <p style={{ ...f(400, 12), color: t.muted, marginTop: 4 }}>
-            {getMusicalGreeting()}. {dateStr}.
-          </p>
+          <p style={{...f(500,13),color:t.muted,marginTop:6,letterSpacing:"0.08em",textTransform:"uppercase"}}>Word Games</p>
+          <p style={{...f(400,12),color:t.muted,marginTop:4}}>{getGreeting()}. {dateStr}.</p>
         </header>
 
-        {/* Genre tabs */}
-        <nav style={{
-          display: "flex", gap: 2, margin: "18px 20px 0", background: t.pillBg,
-          borderRadius: 12, padding: 3, border: `1px solid ${t.divider}`,
-        }}>
-          {["Jazz", "Rock", "Pop Culture"].map((g) => {
+        <nav style={{display:"flex",gap:2,margin:"18px 20px 0",background:t.pillBg,borderRadius:12,padding:3,border:`1px solid ${t.divider}`}}>
+          {["Jazz","Rock","Pop Culture"].map(g => {
             const active = g === genre;
-            return (
-              <button key={g} onClick={() => setGenre(g)} style={{
-                flex: 1, padding: "9px 4px", borderRadius: 10, border: "none", cursor: "pointer",
-                background: active ? t.pillActive : "transparent",
-                ...f(active ? 600 : 400, 12),
-                color: active ? t.pillText : t.muted,
-                transition: "all 0.25s ease",
-              }}>{g}</button>
-            );
+            return <button key={g} onClick={() => setGenre(g)} style={{flex:1,padding:"9px 4px",borderRadius:10,border:"none",background:active?t.pillActive:"transparent",...f(active?600:400,12),color:active?t.pillText:t.muted,transition:"all 0.25s ease"}}>{g}</button>;
           })}
         </nav>
 
-        {/* Difficulty pills — interactive */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 6, margin: "14px 20px" }}>
-          {["Beginner", "Standard", "Expert", "Legendary"].map((d) => {
+        {/* Difficulty pills with hover tooltips */}
+        <div style={{display:"flex",justifyContent:"center",gap:6,margin:"14px 20px"}}>
+          {["Beginner","Standard","Expert","Legendary"].map(d => {
             const active = d === difficulty;
             return (
-              <button key={d} onClick={() => setDifficulty(d)} style={{
-                padding: "5px 12px",
-                background: active ? t.accentSoft : "transparent",
-                border: `1px solid ${active ? t.accentBorder : t.divider}`,
-                borderRadius: 20, ...f(500, 10),
-                color: active ? t.accent : t.textSecondary,
-                cursor: "pointer", transition: "all 0.2s",
-              }}>
-                {d}
-              </button>
+              <div key={d} className="tooltip-wrap">
+                <button onClick={() => setDifficulty(d)} style={{
+                  padding:"5px 12px",background:active?t.accentSoft:"transparent",
+                  border:`1px solid ${active?t.accentBorder:t.divider}`,
+                  borderRadius:20,...f(500,10),color:active?t.accent:t.textSecondary,transition:"all 0.2s",
+                }}>{d}</button>
+                <div className="tooltip" style={{background:t.tooltipBg,color:t.tooltipText,...f(400,11)}}>{DIFF_DESC[d]}</div>
+              </div>
             );
           })}
         </div>
 
-        {/* Difficulty indicator */}
-        <div style={{ textAlign: "center", padding: "0 20px 4px" }}>
-          <span style={{ ...f(400, 11), color: t.muted }}>
-            {difficulty === "Beginner" && "Easier clues, common words"}
-            {difficulty === "Standard" && "Mixed difficulty, genre knowledge helps"}
-            {difficulty === "Expert" && "Obscure terms, fewer hints available"}
-            {difficulty === "Legendary" && "No hints, deep genre knowledge required"}
-          </span>
-        </div>
-
-        {/* Progress */}
-        <div style={{ padding: "0 20px 8px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ ...f(500, 10), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase" }}>Today's progress</span>
-            <span style={{ ...f(600, 10), color: t.accent }}>0 / 4</span>
+        <div style={{padding:"0 20px 8px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+            <span style={{...f(500,10),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase"}}>Today's progress</span>
+            <span style={{...f(600,10),color:t.accent}}>0 / 4</span>
           </div>
-          <div style={{ height: 5, background: t.progressTrack, borderRadius: 5, overflow: "hidden" }}>
-            <div style={{ width: "0%", height: "100%", background: t.progressFill, borderRadius: 5, transition: "width 0.5s" }} />
+          <div style={{height:5,background:t.progressTrack,borderRadius:5,overflow:"hidden"}}>
+            <div style={{width:"0%",height:"100%",background:t.progressFill,borderRadius:5,transition:"width 0.5s"}}/>
           </div>
         </div>
 
-        {/* Game cards — ALL FREE */}
-        <div style={{ padding: "8px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
-          {games.map((game) => (
-            <div key={game.id} onClick={() => navigate(game.screen)}
-              style={{
-                background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14,
-                padding: "14px 16px", display: "flex", alignItems: "center", gap: 14,
-                cursor: "pointer", boxShadow: t.cardShadow, transition: "all 0.15s",
-              }}>
-              <div style={{
-                width: 46, height: 46, borderRadius: 12, background: t.gradientSoft,
-                border: `1px solid ${t.accentBorder}`,
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}>
-                <game.icon color={t.accent} size={22} />
+        <div style={{padding:"8px 20px",display:"flex",flexDirection:"column",gap:8}}>
+          {games.map(game => (
+            <div key={game.id} onClick={() => navigate(game.scr)} style={{
+              background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,
+              padding:"14px 16px",display:"flex",alignItems:"center",gap:14,cursor:"pointer",boxShadow:t.cardShadow,
+            }}>
+              <div style={{width:46,height:46,borderRadius:12,background:t.gradientSoft,border:`1px solid ${t.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <game.icon c={t.accent} s={22}/>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ ...f(600, 15), color: t.text, display: "block", marginBottom: 2 }}>{game.name}</span>
-                <span style={{ ...f(400, 12), color: t.muted }}>{game.desc}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <span style={{...f(600,15),color:t.text,display:"block",marginBottom:2}}>{game.name}</span>
+                <span style={{...f(400,12),color:t.muted}}>{game.desc}</span>
               </div>
-              <span style={{ ...f(400, 11), color: t.muted, flexShrink: 0, opacity: 0.6 }}>{game.time}</span>
+              <span style={{...f(400,11),color:t.muted,flexShrink:0,opacity:.6}}>{game.time}</span>
             </div>
           ))}
         </div>
 
-        <div style={{ height: 1, background: t.divider, margin: "14px 20px" }} />
-
-        {/* Back Catalog — FREE */}
-        <div style={{ padding: "0 20px" }}>
-          <div onClick={() => navigate(SCREENS.ARCHIVE)} style={{
-            background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14,
-            padding: "13px 16px", display: "flex", justifyContent: "space-between", alignItems: "center",
-            cursor: "pointer", boxShadow: t.cardShadow,
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <IconCalendar color={t.accent} size={18} />
-              <span style={{ ...f(500, 14), color: t.text }}>Back Catalog</span>
+        <div style={{height:1,background:t.divider,margin:"14px 20px"}}/>
+        <div style={{padding:"0 20px"}}>
+          <div onClick={() => navigate(SCREENS.ARCHIVE)} style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"13px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer",boxShadow:t.cardShadow}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <I.Cal c={t.accent} s={18}/><span style={{...f(500,14),color:t.text}}>Back Catalog</span>
             </div>
-            <IconArrow color={t.muted} size={14} />
+            <I.Arrow c={t.muted} s={14}/>
           </div>
         </div>
 
-        {/* Dark/Light toggle */}
-        <div style={{ display: "flex", justifyContent: "center", padding: "24px 20px 0" }}>
+        <div style={{display:"flex",justifyContent:"center",padding:"24px 20px 0"}}>
           <button onClick={() => setDarkMode(!darkMode)} style={{
-            background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12,
-            padding: "9px 22px", display: "flex", alignItems: "center", gap: 8,
-            cursor: "pointer", boxShadow: t.cardShadow, ...f(400, 12), color: t.textSecondary,
+            background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:12,padding:"9px 22px",
+            display:"flex",alignItems:"center",gap:8,boxShadow:t.cardShadow,...f(400,12),color:t.textSecondary,
           }}>
-            {darkMode ? <IconSun color={t.accent} size={15} /> : <IconMoon color={t.accent} size={15} />}
+            {darkMode ? <I.Sun c={t.accent} s={15}/> : <I.Moon c={t.accent} s={15}/>}
             {darkMode ? "Light mode" : "Dark mode"}
           </button>
         </div>
 
-        {/* Footer */}
-        <footer style={{ display: "flex", justifyContent: "center", gap: 20, padding: "28px 20px 16px" }}>
-          {["About", "Contact", "Instagram", "TikTok"].map((link) => (
-            <span key={link} style={{ ...f(400, 11), color: t.muted, cursor: "pointer" }}>{link}</span>
-          ))}
+        <footer style={{display:"flex",justifyContent:"center",gap:20,padding:"28px 20px 16px"}}>
+          {["About","Contact","Instagram","TikTok"].map(l => <span key={l} style={{...f(400,11),color:t.muted,cursor:"pointer"}}>{l}</span>)}
         </footer>
       </div>
     </div>
   );
 
-  // ── Reusable: Clue row with hint toggle ──
-  const ClueRow = ({ clue, hint }) => {
-    const [showHint, setShowHint] = useState(false);
-    const canHint = difficulty !== "Legendary";
-    return (
-      <div style={{ padding: "6px 0", borderBottom: `1px solid ${t.divider}` }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ ...f(400, 13), color: t.text, flex: 1 }}>{clue}</span>
-          {canHint && (
-            <button onClick={() => setShowHint(!showHint)} style={{
-              background: showHint ? t.accentSoft : "transparent", border: `1px solid ${showHint ? t.accentBorder : t.divider}`,
-              borderRadius: 6, padding: "2px 8px", cursor: "pointer", marginLeft: 8, flexShrink: 0,
-              ...f(500, 9), color: t.accent, letterSpacing: "0.04em",
-            }}>Hint</button>
-          )}
-        </div>
-        {showHint && hint && (
-          <div style={{ ...f(400, 11), color: t.amber, marginTop: 4, paddingLeft: 8, borderLeft: `2px solid ${t.amber}40` }}>{hint}</div>
-        )}
-      </div>
-    );
-  };
-
-  // ── Reusable: Trivia box ──
-  const TriviaBox = () => {
-    const triviaList = TRIVIA[genre] || TRIVIA.Jazz;
-    const idx = today.getDate() % triviaList.length;
-    return (
-      <div style={{ margin: "14px 20px", padding: "14px 16px", background: t.accentSoft, border: `1px solid ${t.accentBorder}`, borderRadius: 12 }}>
-        <div style={{ ...f(600, 11), color: t.accent, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>Did you know?</div>
-        <div style={{ ...f(400, 13), color: t.text, lineHeight: 1.5 }}>{triviaList[idx]}</div>
-      </div>
-    );
-  };
-
-  // ── Reusable: Spotify invite ──
-  const SpotifyInvite = () => {
-    const pl = SPOTIFY_PLAYLISTS[genre] || SPOTIFY_PLAYLISTS.Jazz;
-    return (
-      <div style={{ margin: "0 20px 20px", padding: "12px 16px", background: t.greenSoft, border: `1px solid ${t.green}40`, borderRadius: 12, display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-        <IconPlay color={t.green} size={16} />
-        <div style={{ flex: 1 }}>
-          <div style={{ ...f(500, 13), color: t.green }}>{pl.name}</div>
-          <div style={{ ...f(400, 11), color: t.green, opacity: 0.7 }}>{pl.desc}</div>
-        </div>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-      </div>
-    );
-  };
-
-  // ═════════════════════════════════════════════
-  // CROSSWORDS (7x7 demo)
-  // ═════════════════════════════════════════════
+  // ═══════ CROSSWORDS ═══════
   if (screen === SCREENS.CROSSWORDS) {
-    const SIZE = 7;
-    const grid = [
-      ["","","","","","",""],
-      [""," ","","","","",""],
-      ["","","","","","",""],
-      [""," ",""," ","","",""],
-      ["","","","","","",""],
-      [""," ",""," ",""," ",""],
-      ["","","","","","",""],
-    ];
-    const blacks = [[1,1],[3,1],[3,3],[5,1],[5,3],[5,5]];
-    const isBlack = (r,c) => blacks.some(([a,b])=>a===r&&b===c);
-    const cluesData = {
-      across: [
-        { clue: "1A: Legendary saxophonist John ___", hint: "His album 'A Love Supreme' changed jazz forever" },
-        { clue: "3A: Musical interval of 8 notes", hint: "From C to the next C, for example" },
-        { clue: "5A: Two musicians playing together", hint: "A ___ is smaller than a trio" },
-        { clue: "7A: Improvising rhythmically", hint: "What a jazz musician does when they feel the groove" },
-      ],
-      down: [
-        { clue: "1D: ___ progression (music)", hint: "A sequence of harmonies" },
-        { clue: "2D: Lesson material", hint: "What a student studies from" },
-        { clue: "3D: Whole ___ (two beats)", hint: "A type of musical duration" },
-      ],
-    };
+    const getNum = (r,c) => CW_NUMS[r] && CW_NUMS[r][c];
     return (
-      <Shell title="Crosswords" showBack>
-        <div style={{ textAlign: "center", padding: "12px 20px 4px" }}>
-          <span style={{ ...f(400, 11), color: t.muted }}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span>
-        </div>
-        <div style={{ textAlign: "center", padding: "4px 20px 8px" }}>
-          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>0:00</span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 16, padding: "0 20px 12px" }}>
-          {["Clues","Check","Reveal","Clear"].map((b) => (
-            <button key={b} style={{ background: "none", border: "none", cursor: "pointer", ...f(500, 11), color: t.accent }}>{b}</button>
+      <Shell title="Crosswords">
+        <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 8px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{display:"flex",justifyContent:"center",gap:12,padding:"0 20px 12px"}}>
+          {[{l:"Check",fn:cwCheck},{l:"Reveal",fn:cwReveal},{l:"Clear",fn:cwClear}].map(b => (
+            <button key={b.l} onClick={b.fn} style={{background:"none",border:`1px solid ${t.divider}`,borderRadius:8,padding:"5px 14px",...f(500,11),color:t.accent}}>{b.l}</button>
           ))}
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, padding: "0 16px" }}>
-          {grid.map((row, ri) => (
-            <div key={ri} style={{ display: "flex", gap: 1 }}>
-              {row.map((cell, ci) => {
-                const black = isBlack(ri,ci);
-                const active = ri===0 && ci===0;
-                const highlight = ri===0 && !black;
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1,padding:"0 12px"}} tabIndex={0}>
+          {CW_GRID.map((row,ri) => (
+            <div key={ri} style={{display:"flex",gap:1}}>
+              {row.map((ans,ci) => {
+                const black = ans === "#";
+                const active = cwActive[0]===ri && cwActive[1]===ci;
+                const hlRow = cwDir==="across" && cwActive[0]===ri && !black;
+                const hlCol = cwDir==="down" && cwActive[1]===ci && !black;
+                const userVal = cwCells[ri][ci];
+                const correct = userVal !== "" && userVal !== "#" && userVal === CW_GRID[ri][ci];
+                const wrong = userVal !== "" && userVal !== "#" && userVal !== CW_GRID[ri][ci] && cwRevealed;
+                const num = getNum(ri,ci);
                 return (
-                  <div key={ci} style={{
-                    width: 44, height: 44, borderRadius: 3,
-                    background: black ? (darkMode?"#222":"#CCC") : active ? t.accent : highlight ? t.accentSoft : t.cardBg,
-                    border: `1px solid ${black?"transparent":t.cardBorder}`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    ...f(600, 16), color: active?t.pillText:t.text, position: "relative",
-                  }}>
-                    {ri===0 && ci===0 && <span style={{ position:"absolute", top:2, left:4, ...f(400,8), color: active?`${t.pillText}B3`:t.muted }}>1</span>}
+                  <div key={ci} onClick={() => {if(!black){if(cwActive[0]===ri&&cwActive[1]===ci)setCwDir(d=>d==="across"?"down":"across");setCwActive([ri,ci]);}}}
+                    style={{
+                      width:44,height:44,borderRadius:3,position:"relative",cursor:black?"default":"pointer",
+                      background:black?(darkMode?"#222":"#CCC"):active?t.accent:(hlRow||hlCol)?t.accentSoft:t.cardBg,
+                      border:`1px solid ${black?"transparent":active?t.accent:t.cardBorder}`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      ...f(600,16),color:active?t.pillText:wrong?"#EF4444":t.text,
+                    }}>
+                    {num && <span style={{position:"absolute",top:2,left:3,...f(400,8),color:active?t.pillText+"B3":t.muted}}>{num}</span>}
+                    {!black && (userVal !== "#" ? userVal : "")}
                   </div>
                 );
               })}
             </div>
           ))}
         </div>
-        <div style={{ margin: "14px 20px", background: t.accentSoft, border: `1px solid ${t.accentBorder}`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <IconChevron color={t.muted} size={16} dir="left" />
-          <span style={{ ...f(400, 13), color: t.text }}>1A: Legendary saxophonist John ___</span>
-          <IconChevron color={t.muted} size={16} dir="right" />
+        <div style={{padding:"12px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>Across</div>
+          {CW_CLUES.across.map((c,i) => <ClueRow key={`a${i}`} clue={c.clue} hint={c.hint}/>)}
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginTop:16,marginBottom:8}}>Down</div>
+          {CW_CLUES.down.map((c,i) => <ClueRow key={`d${i}`} clue={c.clue} hint={c.hint}/>)}
         </div>
-        <div style={{ padding: "0 20px 0" }}>
-          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Across</div>
-          {cluesData.across.map((c,i) => <ClueRow key={`a${i}`} clue={c.clue} hint={c.hint} />)}
-          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 16, marginBottom: 8 }}>Down</div>
-          {cluesData.down.map((c,i) => <ClueRow key={`d${i}`} clue={c.clue} hint={c.hint} />)}
-        </div>
-        <TriviaBox />
-        <SpotifyInvite />
+        <TriviaBox gameKey="crosswords"/>
+        <SpotifyInvite/>
       </Shell>
     );
   }
 
-  // ═════════════════════════════════════════════
-  // SOLO (empty state — no pre-filled guesses)
-  // ═════════════════════════════════════════════
+  // ═══════ SOLO ═══════
   if (screen === SCREENS.SOLO) {
-    const guesses = [
-      { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
-      { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
-      { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
-      { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
-      { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
-      { letters: ["","","","",""], colors: ["empty","empty","empty","empty","empty"] },
-    ];
-    const cMap = { correct: t.green, present: t.amber, absent: darkMode?"#333":"#D0D0D0", empty: "transparent" };
-    const bMap = { correct: t.green, present: t.amber, absent: darkMode?"#444":"#D0D0D0", empty: darkMode?"#333":"#D0D0D0" };
+    const allRows = [...soloGuesses];
+    while (allRows.length < 6) allRows.push(null);
+    const cMap = {correct:t.green,present:t.amber,absent:darkMode?"#444":"#D0D0D0",empty:"transparent"};
+    const bMap = {correct:t.green,present:t.amber,absent:darkMode?"#444":"#D0D0D0",empty:darkMode?"#333":"#D0D0D0"};
     const keyboard = [["Q","W","E","R","T","Y","U","I","O","P"],["A","S","D","F","G","H","J","K","L"],["Enter","Z","X","C","V","B","N","M","Del"]];
     return (
-      <Shell title="Solo" showBack>
-        <div style={{ textAlign: "center", padding: "12px 20px 4px" }}>
-          <span style={{ ...f(400, 11), color: t.muted }}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span>
+      <Shell title="Solo">
+        <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 16px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,padding:"0 20px"}}>
+          {allRows.map((row,ri) => {
+            const isCurrent = ri === soloGuesses.length && !soloGameOver;
+            return (
+              <div key={ri} style={{display:"flex",gap:6}}>
+                {[0,1,2,3,4].map(ci => {
+                  let letter = "", color = "empty";
+                  if (row) { letter = row.letters[ci]; color = row.colors[ci]; }
+                  else if (isCurrent && ci < soloCurrent.length) { letter = soloCurrent[ci]; }
+                  return (
+                    <div key={ci} style={{
+                      width:54,height:54,borderRadius:8,
+                      background:cMap[color],border:`2px solid ${bMap[color]}`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      ...f(700,22),color:color==="empty"?t.text:"#FFF",
+                      transform: isCurrent && ci === soloCurrent.length - 1 ? "scale(1.05)" : "scale(1)",
+                      transition: "transform 0.1s",
+                    }}>{letter}</div>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
-        <div style={{ textAlign: "center", padding: "4px 20px 16px" }}>
-          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>0:00</span>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "0 20px" }}>
-          {guesses.map((row, ri) => (
-            <div key={ri} style={{ display: "flex", gap: 6 }}>
-              {row.letters.map((l, ci) => (
-                <div key={ci} style={{
-                  width: 54, height: 54, borderRadius: 8,
-                  background: cMap[row.colors[ci]], border: `2px solid ${bMap[row.colors[ci]]}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  ...f(700, 22), color: row.colors[ci]==="empty"?t.text:"#FFF",
-                }}>{l}</div>
-              ))}
-            </div>
-          ))}
-        </div>
-        <div style={{ padding: "24px 8px 12px", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
-          {keyboard.map((row, ri) => (
-            <div key={ri} style={{ display: "flex", gap: 4 }}>
-              {row.map((key) => {
+        {soloGameOver && (
+          <div style={{textAlign:"center",padding:"12px 20px"}}>
+            <span style={{...f(600,16),color:soloGuesses[soloGuesses.length-1]?.letters.join("")===SOLO_WORD?t.green:"#EF4444"}}>
+              {soloGuesses[soloGuesses.length-1]?.letters.join("")===SOLO_WORD ? `Solved in ${soloGuesses.length}/6!` : `The word was ${SOLO_WORD}`}
+            </span>
+          </div>
+        )}
+        <div style={{padding:"20px 8px 12px",display:"flex",flexDirection:"column",gap:5,alignItems:"center"}}>
+          {keyboard.map((row,ri) => (
+            <div key={ri} style={{display:"flex",gap:4}}>
+              {row.map(key => {
                 const wide = key==="Enter"||key==="Del";
+                const kc = soloKeyColors[key];
                 return (
-                  <button key={key} style={{
-                    width: wide?56:34, height: 44, borderRadius: 6,
-                    background: darkMode?"#2A2A2A":"#E5E5E5",
-                    border: "none", cursor: "pointer", ...f(600, wide?10:14), color: t.text,
-                    display: "flex", alignItems: "center", justifyContent: "center",
+                  <button key={key} onClick={() => handleSoloKey(key)} style={{
+                    width:wide?56:34,height:44,borderRadius:6,
+                    background:kc?(kc==="correct"?t.green:kc==="present"?t.amber:(darkMode?"#333":"#D0D0D0")):(darkMode?"#2A2A2A":"#E5E5E5"),
+                    border:"none",...f(600,wide?10:14),color:kc?"#FFF":t.text,
+                    display:"flex",alignItems:"center",justifyContent:"center",
                   }}>{key}</button>
                 );
               })}
             </div>
           ))}
         </div>
-        <TriviaBox />
-        <SpotifyInvite />
+        <TriviaBox gameKey="solo"/>
+        <SpotifyInvite/>
       </Shell>
     );
   }
 
-  // ═════════════════════════════════════════════
-  // MINI (empty state)
-  // ═════════════════════════════════════════════
+  // ═══════ MINI ═══════
   if (screen === SCREENS.MINI) {
-    const grid = [["","","","",""],["","","","",""],["","","","",""],["","","","",""],["","","","",""]];
-    const blacks = [[1,1],[1,3],[3,1],[3,3]];
-    const isBlack = (r,c) => blacks.some(([a,b])=>a===r&&b===c);
     return (
-      <Shell title="Mini" showBack>
-        <div style={{ textAlign: "center", padding: "12px 20px 4px" }}>
-          <span style={{ ...f(400, 11), color: t.muted }}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span>
-        </div>
-        <div style={{ textAlign: "center", padding: "4px 20px 12px" }}>
-          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>0:00</span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 16, padding: "0 20px 12px" }}>
-          {["Clues","Check","Reveal","Clear"].map((b) => (
-            <button key={b} style={{ background: "none", border: "none", cursor: "pointer", ...f(500, 11), color: t.accent }}>{b}</button>
+      <Shell title="Mini">
+        <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 12px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{display:"flex",justifyContent:"center",gap:12,padding:"0 20px 12px"}}>
+          {[{l:"Reveal",fn:()=>setMiniCells(MINI_GRID.map(r=>[...r]))},{l:"Clear",fn:()=>setMiniCells(MINI_GRID.map(r=>r.map(c=>c==="#"?"#":"")))}].map(b => (
+            <button key={b.l} onClick={b.fn} style={{background:"none",border:`1px solid ${t.divider}`,borderRadius:8,padding:"5px 14px",...f(500,11),color:t.accent}}>{b.l}</button>
           ))}
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, padding: "0 20px" }}>
-          {grid.map((row, ri) => (
-            <div key={ri} style={{ display: "flex", gap: 1 }}>
-              {row.map((cell, ci) => {
-                const black = isBlack(ri,ci);
-                const active = ri===0 && ci===0;
-                const hl = ri===0 && !black;
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1,padding:"0 20px"}} tabIndex={0}>
+          {MINI_GRID.map((row,ri) => (
+            <div key={ri} style={{display:"flex",gap:1}}>
+              {row.map((ans,ci) => {
+                const black = ans === "#";
+                const active = miniActive[0]===ri && miniActive[1]===ci;
+                const hlRow = miniDir==="across" && miniActive[0]===ri && !black;
+                const hlCol = miniDir==="down" && miniActive[1]===ci && !black;
+                const num = MINI_NUMS[ri] && MINI_NUMS[ri][ci];
                 return (
-                  <div key={ci} style={{
-                    width: 56, height: 56, borderRadius: 4,
-                    background: black?(darkMode?"#222":"#CCC"):active?t.accent:hl?t.accentSoft:t.cardBg,
-                    border: `1px solid ${black?"transparent":t.cardBorder}`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    ...f(600, 20), color: active?t.pillText:t.text, position: "relative",
-                  }}>
-                    {ri===0 && ci===0 && <span style={{ position:"absolute", top:2, left:4, ...f(400,8), color: active?`${t.pillText}B3`:t.muted }}>1</span>}
+                  <div key={ci} onClick={() => {if(!black){if(miniActive[0]===ri&&miniActive[1]===ci)setMiniDir(d=>d==="across"?"down":"across");setMiniActive([ri,ci]);}}}
+                    style={{
+                      width:56,height:56,borderRadius:4,position:"relative",cursor:black?"default":"pointer",
+                      background:black?(darkMode?"#222":"#CCC"):active?t.accent:(hlRow||hlCol)?t.accentSoft:t.cardBg,
+                      border:`1px solid ${black?"transparent":active?t.accent:t.cardBorder}`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      ...f(600,20),color:active?t.pillText:t.text,
+                    }}>
+                    {num && <span style={{position:"absolute",top:2,left:4,...f(400,8),color:active?t.pillText+"B3":t.muted}}>{num}</span>}
+                    {!black && miniCells[ri][ci]}
                   </div>
                 );
               })}
             </div>
           ))}
         </div>
-        <div style={{ margin: "14px 20px", background: t.accentSoft, border: `1px solid ${t.accentBorder}`, borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <IconChevron color={t.muted} size={16} dir="left" />
-          <span style={{ ...f(400, 13), color: t.text }}>1A: Jazz trumpet legend Davis</span>
-          <IconChevron color={t.muted} size={16} dir="right" />
+        <div style={{padding:"12px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>Across</div>
+          {MINI_CLUES.across.map((c,i) => <ClueRow key={`a${i}`} clue={c.clue} hint={c.hint}/>)}
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginTop:16,marginBottom:8}}>Down</div>
+          {MINI_CLUES.down.map((c,i) => <ClueRow key={`d${i}`} clue={c.clue} hint={c.hint}/>)}
         </div>
-        <div style={{ padding: "0 20px 0" }}>
-          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>Across</div>
-          {[
-            { clue: "1A: Jazz trumpet legend Davis", hint: "First name Miles" },
-            { clue: "3A: Musical sounds", hint: "Written on a staff" },
-            { clue: "5A: ___ spot (jazz club)", hint: "The opposite of cold" },
-          ].map((c,i) => <ClueRow key={i} clue={c.clue} hint={c.hint} />)}
-        </div>
-        <TriviaBox />
-        <SpotifyInvite />
+        <TriviaBox gameKey="mini"/>
+        <SpotifyInvite/>
       </Shell>
     );
   }
 
-  // ═════════════════════════════════════════════
-  // GROOVE (empty state)
-  // ═════════════════════════════════════════════
+  // ═══════ GROOVE ═══════
   if (screen === SCREENS.GROOVE) {
     const SIZE = 8;
-    const letters = "COLTRANEDSAXBASSRIFFMONKDRUMSETCOMPGROOVEJZ".padEnd(SIZE*SIZE,"A").split("");
-    const words = ["COLTRANE","SAX","MONK","BASS","DRUMS","RIFF","COMP","GROOVE"];
     return (
-      <Shell title="Groove" showBack>
-        <div style={{ textAlign: "center", padding: "12px 20px 4px" }}>
-          <span style={{ ...f(400, 11), color: t.muted }}>Find 8 words — Puzzle #42 — {genre} — {difficulty}</span>
+      <Shell title="Groove">
+        <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Find 8 words — Puzzle #42 — {genre} — {difficulty}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 12px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",padding:"0 20px 10px"}}>
+          {GROOVE_WORDS.map(w => {
+            const found = grooveFound.includes(w);
+            return <span key={w} style={{padding:"4px 10px",borderRadius:6,background:found?t.greenSoft:t.accentSoft,border:`1px solid ${found?t.green:t.accentBorder}`,...f(600,11),color:found?t.green:t.accent,textDecoration:found?"line-through":"none",opacity:found?.5:1}}>{w}</span>;
+          })}
         </div>
-        <div style={{ textAlign: "center", padding: "4px 20px 12px" }}>
-          <span style={{ ...f(300, 26), color: t.textSecondary, letterSpacing: "0.08em" }}>0:00</span>
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", padding: "0 20px 14px" }}>
-          {words.map((w) => (
-            <span key={w} style={{
-              padding: "4px 10px", borderRadius: 6,
-              background: t.accentSoft, border: `1px solid ${t.accentBorder}`,
-              ...f(600, 11), color: t.accent,
-            }}>{w}</span>
-          ))}
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "0 12px" }}>
-          {Array.from({length:SIZE},(_,ri)=>(
-            <div key={ri} style={{ display: "flex", gap: 2 }}>
-              {Array.from({length:SIZE},(_,ci)=>(
-                <div key={ci} style={{
-                  width: 40, height: 40, borderRadius: 6, background: t.cardBg,
-                  border: `1px solid ${t.cardBorder}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  ...f(600, 14), color: t.text,
-                }}>{letters[ri*SIZE+ci]}</div>
-              ))}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"0 12px"}}>
+          {Array.from({length:SIZE},(_,ri) => (
+            <div key={ri} style={{display:"flex",gap:2}}>
+              {Array.from({length:SIZE},(_,ci) => {
+                const idx = ri*SIZE+ci;
+                const sel = grooveSelected.includes(idx);
+                const isFoundLetter = grooveFound.some(w => {
+                  const start = GROOVE_LETTERS.join("").indexOf(w);
+                  if (start === -1) return false;
+                  for (let k=0;k<w.length;k++) if (start+k===idx) return true;
+                  return false;
+                });
+                return (
+                  <div key={ci} onClick={() => handleGrooveCell(idx)} style={{
+                    width:40,height:40,borderRadius:6,cursor:"pointer",
+                    background:isFoundLetter?t.greenSoft:sel?(grooveWrong?"rgba(239,68,68,0.2)":t.accentSoft):t.cardBg,
+                    border:`1px solid ${isFoundLetter?t.green:sel?(grooveWrong?"#EF4444":t.accent):t.cardBorder}`,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    ...f(600,14),color:isFoundLetter?t.green:sel?t.accent:t.text,
+                    transition:"all 0.15s",
+                  }}>{GROOVE_LETTERS[idx]}</div>
+                );
+              })}
             </div>
           ))}
         </div>
-        <div style={{ height: 14 }} />
-        <TriviaBox />
-        <SpotifyInvite />
+        {grooveSelected.length > 0 && (
+          <div style={{display:"flex",justifyContent:"center",padding:"12px 20px",gap:10}}>
+            <span style={{...f(600,14),color:t.accent}}>{grooveSelected.map(i=>GROOVE_LETTERS[i]).join("")}</span>
+            <button onClick={handleGrooveSubmit} style={{background:t.gradientBtn,border:"none",borderRadius:8,padding:"6px 20px",...f(600,12),color:t.pillText}}>Submit</button>
+            <button onClick={() => setGrooveSelected([])} style={{background:"none",border:`1px solid ${t.divider}`,borderRadius:8,padding:"6px 14px",...f(400,12),color:t.muted}}>Clear</button>
+          </div>
+        )}
+        <div style={{padding:"8px 20px",textAlign:"center"}}><span style={{...f(400,11),color:t.muted}}>Tap letters to select, then Submit. {grooveFound.length}/{GROOVE_WORDS.length} found.</span></div>
+        <TriviaBox gameKey="groove"/>
+        <SpotifyInvite/>
       </Shell>
     );
   }
 
-  // ═════════════════════════════════════════════
-  // STATS — rich, genre/game breakdown
-  // ═════════════════════════════════════════════
+  // ═══════ STATS ═══════
   if (screen === SCREENS.STATS) {
-    const [statsGenre, setStatsGenre] = useState("All");
-    const [statsGame, setStatsGame] = useState("All");
-
-    // Mock data per genre+game
-    const overallStats = { played: 87, winRate: 94, streak: 12, bestStreak: 23, avgTime: "3:42" };
-
+    const overallStats = {played:87,winRate:94,streak:12,bestStreak:23,avgTime:"3:42"};
     const gameStats = {
-      Crosswords: { played: 32, winRate: 97, avgTime: "12:18", bestTime: "8:45", streak: 8 },
-      Solo: { played: 24, winRate: 88, avgTime: "2:36", bestTime: "1:12", streak: 5 },
-      Mini: { played: 18, winRate: 100, avgTime: "1:24", bestTime: "0:38", streak: 18 },
-      Groove: { played: 13, winRate: 92, avgTime: "4:15", bestTime: "2:50", streak: 4 },
+      Crosswords:{played:32,winRate:97,avgTime:"12:18",bestTime:"8:45",streak:8},
+      Solo:{played:24,winRate:88,avgTime:"2:36",bestTime:"1:12",streak:5},
+      Mini:{played:18,winRate:100,avgTime:"1:24",bestTime:"0:38",streak:18},
+      Groove:{played:13,winRate:92,avgTime:"4:15",bestTime:"2:50",streak:4},
     };
-
-    const genreBreakdown = {
-      Jazz: { played: 42, winRate: 95 },
-      Rock: { played: 28, winRate: 93 },
-      "Pop Culture": { played: 17, winRate: 94 },
-    };
-
-    // Solo guess distribution
+    const genreBreakdown = {Jazz:{played:42,winRate:95},Rock:{played:28,winRate:93},"Pop Culture":{played:17,winRate:94}};
     const dist = [{g:1,n:1},{g:2,n:4},{g:3,n:7},{g:4,n:6},{g:5,n:4},{g:6,n:2}];
     const mx = Math.max(...dist.map(d=>d.n));
-
     return (
-      <Shell title="Stats" showBack>
-        {/* Summary cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "16px 20px 0" }}>
-          {[
-            {l:"Played", v: overallStats.played, c: t.accent},
-            {l:"Win %", v: overallStats.winRate, c: t.green},
-            {l:"Streak", v: overallStats.streak, c: t.amber},
-          ].map((s) => (
-            <div key={s.l} style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14, padding: "14px 8px", textAlign: "center", boxShadow: t.cardShadow }}>
-              <div style={{ ...f(700, 26), color: s.c, lineHeight: 1.1 }}>{s.v}</div>
-              <div style={{ ...f(400, 10), color: t.muted, letterSpacing: "0.05em", textTransform: "uppercase", marginTop: 4 }}>{s.l}</div>
+      <Shell title="Stats">
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,padding:"16px 20px 0"}}>
+          {[{l:"Played",v:overallStats.played,c:t.accent},{l:"Win %",v:overallStats.winRate,c:t.green},{l:"Streak",v:overallStats.streak,c:t.amber}].map(s => (
+            <div key={s.l} style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"14px 8px",textAlign:"center",boxShadow:t.cardShadow}}>
+              <div style={{...f(700,26),color:s.c,lineHeight:1.1}}>{s.v}</div>
+              <div style={{...f(400,10),color:t.muted,textTransform:"uppercase",marginTop:4}}>{s.l}</div>
             </div>
           ))}
         </div>
-
-        {/* Best streak + avg time row */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "8px 20px 0" }}>
-          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14, padding: "12px 14px", boxShadow: t.cardShadow, display: "flex", alignItems: "center", gap: 10 }}>
-            <IconTrophy color={t.accent} size={18} />
-            <div>
-              <div style={{ ...f(700, 18), color: t.accent, lineHeight: 1 }}>{overallStats.bestStreak}</div>
-              <div style={{ ...f(400, 10), color: t.muted, marginTop: 2 }}>Best Streak</div>
-            </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,padding:"8px 20px 0"}}>
+          <div style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"12px 14px",boxShadow:t.cardShadow,display:"flex",alignItems:"center",gap:10}}>
+            <I.Trophy c={t.accent} s={18}/><div><div style={{...f(700,18),color:t.accent,lineHeight:1}}>{overallStats.bestStreak}</div><div style={{...f(400,10),color:t.muted,marginTop:2}}>Best Streak</div></div>
           </div>
-          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14, padding: "12px 14px", boxShadow: t.cardShadow, display: "flex", alignItems: "center", gap: 10 }}>
-            <IconClock color={t.accent} size={18} />
-            <div>
-              <div style={{ ...f(700, 18), color: t.accent, lineHeight: 1 }}>{overallStats.avgTime}</div>
-              <div style={{ ...f(400, 10), color: t.muted, marginTop: 2 }}>Avg. Time</div>
-            </div>
+          <div style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"12px 14px",boxShadow:t.cardShadow,display:"flex",alignItems:"center",gap:10}}>
+            <I.Clock c={t.accent} s={18}/><div><div style={{...f(700,18),color:t.accent,lineHeight:1}}>{overallStats.avgTime}</div><div style={{...f(400,10),color:t.muted,marginTop:2}}>Avg. Time</div></div>
           </div>
         </div>
-
-        {/* By Game */}
-        <div style={{ padding: "20px 20px 0" }}>
-          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>By Game</div>
-          {Object.entries(gameStats).map(([name, gs]) => (
-            <div key={name} style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "12px 14px", marginBottom: 8, boxShadow: t.cardShadow }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <span style={{ ...f(600, 14), color: t.text }}>{name}</span>
-                <span style={{ ...f(400, 11), color: t.muted }}>{gs.played} played</span>
+        <div style={{padding:"20px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10}}>By Game</div>
+          {Object.entries(gameStats).map(([name,gs]) => (
+            <div key={name} style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:12,padding:"12px 14px",marginBottom:8,boxShadow:t.cardShadow}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <span style={{...f(600,14),color:t.text}}>{name}</span><span style={{...f(400,11),color:t.muted}}>{gs.played} played</span>
               </div>
-              <div style={{ display: "flex", gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ ...f(400, 10), color: t.muted, marginBottom: 2 }}>Win %</div>
-                  <div style={{ height: 4, background: t.progressTrack, borderRadius: 4, overflow: "hidden" }}>
-                    <div style={{ width: `${gs.winRate}%`, height: "100%", background: t.green, borderRadius: 4 }} />
-                  </div>
-                  <div style={{ ...f(600, 11), color: t.green, marginTop: 2 }}>{gs.winRate}%</div>
-                </div>
-                <div style={{ textAlign: "center", minWidth: 50 }}>
-                  <div style={{ ...f(400, 10), color: t.muted, marginBottom: 2 }}>Avg</div>
-                  <div style={{ ...f(600, 13), color: t.textSecondary }}>{gs.avgTime}</div>
-                </div>
-                <div style={{ textAlign: "center", minWidth: 50 }}>
-                  <div style={{ ...f(400, 10), color: t.muted, marginBottom: 2 }}>Best</div>
-                  <div style={{ ...f(600, 13), color: t.accent }}>{gs.bestTime}</div>
-                </div>
-                <div style={{ textAlign: "center", minWidth: 40 }}>
-                  <div style={{ ...f(400, 10), color: t.muted, marginBottom: 2 }}>Streak</div>
-                  <div style={{ ...f(600, 13), color: t.amber }}>{gs.streak}</div>
+              <div style={{display:"flex",gap:12}}>
+                <div style={{flex:1}}><div style={{...f(400,10),color:t.muted,marginBottom:2}}>Win %</div><div style={{height:4,background:t.progressTrack,borderRadius:4,overflow:"hidden"}}><div style={{width:`${gs.winRate}%`,height:"100%",background:t.green,borderRadius:4}}/></div><div style={{...f(600,11),color:t.green,marginTop:2}}>{gs.winRate}%</div></div>
+                <div style={{textAlign:"center",minWidth:50}}><div style={{...f(400,10),color:t.muted,marginBottom:2}}>Avg</div><div style={{...f(600,13),color:t.textSecondary}}>{gs.avgTime}</div></div>
+                <div style={{textAlign:"center",minWidth:50}}><div style={{...f(400,10),color:t.muted,marginBottom:2}}>Best</div><div style={{...f(600,13),color:t.accent}}>{gs.bestTime}</div></div>
+                <div style={{textAlign:"center",minWidth:40}}><div style={{...f(400,10),color:t.muted,marginBottom:2}}>Streak</div><div style={{...f(600,13),color:t.amber}}>{gs.streak}</div></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{padding:"12px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10}}>By Genre</div>
+          <div style={{display:"flex",gap:8}}>
+            {Object.entries(genreBreakdown).map(([gn,gd]) => (
+              <div key={gn} style={{flex:1,background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:12,padding:"12px 10px",textAlign:"center",boxShadow:t.cardShadow}}>
+                <div style={{...f(600,12),color:t.accent,marginBottom:6}}>{gn}</div>
+                <div style={{...f(700,20),color:t.text,lineHeight:1}}>{gd.played}</div>
+                <div style={{...f(400,10),color:t.muted,marginTop:2}}>played</div>
+                <div style={{height:3,background:t.progressTrack,borderRadius:3,overflow:"hidden",marginTop:8}}><div style={{width:`${gd.winRate}%`,height:"100%",background:t.green,borderRadius:3}}/></div>
+                <div style={{...f(500,10),color:t.green,marginTop:4}}>{gd.winRate}% win</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{padding:"20px 20px 0"}}>
+          <div style={{...f(600,11),color:t.muted,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:12}}>Solo — Guess Distribution</div>
+          {dist.map(d => (
+            <div key={d.g} style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
+              <span style={{...f(500,13),color:t.textSecondary,width:14,textAlign:"right"}}>{d.g}</span>
+              <div style={{flex:1,height:28,background:t.cardBg,borderRadius:7,border:`1px solid ${t.cardBorder}`,overflow:"hidden"}}>
+                <div style={{width:`${Math.max((d.n/mx)*100,10)}%`,height:"100%",background:d.n===mx?t.gradientBtn:t.accentSoft,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:8}}>
+                  <span style={{...f(600,11),color:d.n===mx?t.pillText:t.accent}}>{d.n}</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
-
-        {/* By Genre */}
-        <div style={{ padding: "12px 20px 0" }}>
-          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>By Genre</div>
-          <div style={{ display: "flex", gap: 8 }}>
-            {Object.entries(genreBreakdown).map(([gName, gd]) => (
-              <div key={gName} style={{ flex: 1, background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "12px 10px", textAlign: "center", boxShadow: t.cardShadow }}>
-                <div style={{ ...f(600, 12), color: t.accent, marginBottom: 6 }}>{gName}</div>
-                <div style={{ ...f(700, 20), color: t.text, lineHeight: 1 }}>{gd.played}</div>
-                <div style={{ ...f(400, 10), color: t.muted, marginTop: 2 }}>played</div>
-                <div style={{ height: 3, background: t.progressTrack, borderRadius: 3, overflow: "hidden", marginTop: 8 }}>
-                  <div style={{ width: `${gd.winRate}%`, height: "100%", background: t.green, borderRadius: 3 }} />
-                </div>
-                <div style={{ ...f(500, 10), color: t.green, marginTop: 4 }}>{gd.winRate}% win</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Solo Guess Distribution */}
-        <div style={{ padding: "20px 20px 0" }}>
-          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12 }}>Solo — Guess Distribution</div>
-          {dist.map((d) => (
-            <div key={d.g} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-              <span style={{ ...f(500, 13), color: t.textSecondary, width: 14, textAlign: "right" }}>{d.g}</span>
-              <div style={{ flex: 1, height: 28, background: t.cardBg, borderRadius: 7, border: `1px solid ${t.cardBorder}`, overflow: "hidden" }}>
-                <div style={{
-                  width: `${Math.max((d.n/mx)*100, 10)}%`, height: "100%",
-                  background: d.n===mx ? t.gradientBtn : t.accentSoft,
-                  borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "flex-end", paddingRight: 8,
-                }}>
-                  <span style={{ ...f(600, 11), color: d.n===mx ? t.pillText : t.accent }}>{d.n}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Completion time breakdown */}
-        <div style={{ padding: "20px 20px 0" }}>
-          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>Completion Times</div>
-          <div style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 12, padding: "14px", boxShadow: t.cardShadow }}>
-            {[
-              { label: "Fastest Crossword", value: "8:45", genre: "Jazz" },
-              { label: "Fastest Mini", value: "0:38", genre: "Rock" },
-              { label: "Fastest Solo", value: "1:12", genre: "Jazz" },
-              { label: "Fastest Groove", value: "2:50", genre: "Pop Culture" },
-            ].map((item, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: i < 3 ? `1px solid ${t.divider}` : "none" }}>
-                <span style={{ ...f(400, 13), color: t.text }}>{item.label}</span>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ ...f(400, 10), color: t.muted, padding: "2px 6px", background: t.accentSoft, borderRadius: 4 }}>{item.genre}</span>
-                  <span style={{ ...f(600, 13), color: t.accent }}>{item.value}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Badges */}
-        <div style={{ padding: "20px 20px" }}>
-          <div style={{ ...f(600, 11), color: t.muted, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12 }}>Badges</div>
-          <div style={{ display: "flex", gap: 10 }}>
-            {[{n:"First Riff",e:true},{n:"Week Streak",e:true},{n:"Jazz Head",e:false},{n:"Speed Run",e:false}].map((b) => (
-              <div key={b.n} style={{ minWidth: 72, textAlign: "center", opacity: b.e?1:0.3 }}>
-                <div style={{
-                  width: 48, height: 48, borderRadius: 14, background: b.e ? t.gradientSoft : (darkMode?"#222":"#EEE"),
-                  border: `1px solid ${b.e?t.accentBorder:t.divider}`,
-                  display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 6px",
-                  ...f(700, 16), color: b.e?t.accent:t.muted,
-                }}>{b.e?"*":"?"}</div>
-                <span style={{ ...f(400, 10), color: t.textSecondary }}>{b.n}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ padding: "0 20px 20px" }}>
-          <button onClick={() => navigate(SCREENS.SHARE)} style={{
-            width: "100%", padding: "13px", borderRadius: 12,
-            background: t.gradientBtn, border: "none",
-            ...f(600, 14), color: t.pillText, cursor: "pointer",
-          }}>Share Results</button>
+        <div style={{padding:"20px 20px"}}>
+          <button onClick={() => navigate(SCREENS.SHARE)} style={{width:"100%",padding:"13px",borderRadius:12,background:t.gradientBtn,border:"none",...f(600,14),color:t.pillText}}>Share Results</button>
         </div>
       </Shell>
     );
   }
 
-  // ═════════════════════════════════════════════
-  // SHARE
-  // ═════════════════════════════════════════════
-  if (screen === SCREENS.SHARE) {
-    const grid = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
-    return (
-      <Shell title="" showBack>
-        <div style={{ margin: "20px", background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 18, padding: "28px 20px", textAlign: "center", boxShadow: t.cardShadow }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 4 }}>
-            <IconNote color={t.accent} size={18} />
-            <span style={{ ...f(700, 28), background: t.gradient, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Riff Solo</span>
-          </div>
-          <div style={{ ...f(400, 12), color: t.muted, marginBottom: 16 }}>Puzzle #42 — {dateStr}</div>
-          <div style={{ ...f(400, 14), color: t.textSecondary, marginBottom: 4 }}>Not yet solved</div>
-          <div style={{ ...f(700, 36), color: t.muted, marginBottom: 20 }}>—/6</div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-            {["Copy","WhatsApp","X"].map((b) => (
-              <button key={b} style={{
-                padding: "9px 20px", borderRadius: 10,
-                background: b==="Copy" ? t.gradientBtn : "transparent",
-                border: b==="Copy" ? "none" : `1px solid ${t.cardBorder}`,
-                ...f(500, 12), color: b==="Copy" ? t.pillText : t.textSecondary, cursor: "pointer",
-              }}>{b}</button>
-            ))}
-          </div>
+  // ═══════ SHARE ═══════
+  if (screen === SCREENS.SHARE) return (
+    <Shell title="">
+      <div style={{margin:"20px",background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:18,padding:"28px 20px",textAlign:"center",boxShadow:t.cardShadow}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
+          <I.Note c={t.accent} s={18}/>
+          <span className="grad-text" style={{...f(700,28),background:t.gradient,display:"inline-block"}}>Riff</span>
         </div>
-        <div style={{ margin: "0 20px 16px", padding: "14px 16px", background: t.accentSoft, border: `1px solid ${t.accentBorder}`, borderRadius: 12 }}>
-          <div style={{ ...f(600, 11), color: t.accent, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>Did you know?</div>
-          <div style={{ ...f(400, 13), color: t.text }}>Miles Davis recorded "Kind of Blue" in just two sessions at Columbia's 30th Street Studio in 1959.</div>
+        <div style={{...f(400,12),color:t.muted,marginBottom:16}}>Puzzle #42 — {dateStr}</div>
+        <div style={{...f(400,14),color:t.textSecondary,marginBottom:20}}>Share your results with friends</div>
+        <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+          {["Copy","WhatsApp","X"].map(b => (
+            <button key={b} style={{padding:"9px 20px",borderRadius:10,background:b==="Copy"?t.gradientBtn:"transparent",border:b==="Copy"?"none":`1px solid ${t.cardBorder}`,...f(500,12),color:b==="Copy"?t.pillText:t.textSecondary}}>{b}</button>
+          ))}
         </div>
-        <div style={{ margin: "0 20px", padding: "12px 16px", background: t.greenSoft, border: `1px solid ${t.green}40`, borderRadius: 12, display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-          <IconPlay color={t.green} size={16} />
-          <span style={{ ...f(500, 13), color: t.green }}>Listen to today's artists on Spotify</span>
-        </div>
-      </Shell>
-    );
-  }
+      </div>
+      <SpotifyInvite/>
+    </Shell>
+  );
 
-  // ═════════════════════════════════════════════
-  // AUTH
-  // ═════════════════════════════════════════════
+  // ═══════ AUTH ═══════
   if (screen === SCREENS.AUTH) return (
-    <Shell title="" showBack>
-      <div style={{ padding: "40px 24px", textAlign: "center" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 6 }}>
-          <IconNote color={t.accent} size={20} />
-          <h1 style={{ ...f(700, 38), margin: 0, lineHeight: 1, background: t.gradient, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>Riff</h1>
+    <Shell title="">
+      <div style={{padding:"40px 24px",textAlign:"center"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:6}}>
+          <I.Note c={t.accent} s={20}/>
+          <h1 className="grad-text" style={{...f(700,38),margin:0,lineHeight:1,background:t.gradient,display:"inline-block"}}>Riff</h1>
         </div>
-        <p style={{ ...f(400, 13), color: t.muted, marginBottom: 32 }}>Sign in to save your stats and streaks</p>
-        <input type="email" placeholder="Email address" style={{ width: "100%", padding: "13px 16px", borderRadius: 12, background: t.inputBg, border: `1px solid ${t.inputBorder}`, ...f(400, 14), color: t.text, outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
-        <button style={{ width: "100%", padding: "13px", borderRadius: 12, background: t.gradientBtn, border: "none", ...f(600, 14), color: t.pillText, cursor: "pointer", marginBottom: 20 }}>Continue with email</button>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-          <div style={{ flex: 1, height: 1, background: t.divider }} /><span style={{ ...f(400, 12), color: t.muted }}>or</span><div style={{ flex: 1, height: 1, background: t.divider }} />
-        </div>
-        <button style={{ width: "100%", padding: "13px", borderRadius: 12, background: t.cardBg, border: `1px solid ${t.cardBorder}`, ...f(500, 14), color: t.text, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: t.cardShadow }}>
+        <p style={{...f(400,13),color:t.muted,marginBottom:32}}>Sign in to save your stats and streaks</p>
+        <input type="email" placeholder="Email address" style={{width:"100%",padding:"13px 16px",borderRadius:12,background:t.inputBg,border:`1px solid ${t.inputBorder}`,...f(400,14),color:t.text,outline:"none",boxSizing:"border-box",marginBottom:12}}/>
+        <button style={{width:"100%",padding:"13px",borderRadius:12,background:t.gradientBtn,border:"none",...f(600,14),color:t.pillText,marginBottom:20}}>Continue with email</button>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}><div style={{flex:1,height:1,background:t.divider}}/><span style={{...f(400,12),color:t.muted}}>or</span><div style={{flex:1,height:1,background:t.divider}}/></div>
+        <button style={{width:"100%",padding:"13px",borderRadius:12,background:t.cardBg,border:`1px solid ${t.cardBorder}`,...f(500,14),color:t.text,display:"flex",alignItems:"center",justifyContent:"center",gap:10,boxShadow:t.cardShadow}}>
           <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 001 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
           Continue with Google
         </button>
-        <p style={{ ...f(400, 12), color: t.muted, marginTop: 20, cursor: "pointer" }}>Already have an account? <span style={{ color: t.accent }}>Sign in</span></p>
       </div>
     </Shell>
   );
 
-  // ═════════════════════════════════════════════
-  // HOW TO PLAY
-  // ═════════════════════════════════════════════
-  if (screen === SCREENS.HOW_TO_PLAY) {
+  // ═══════ HOW TO PLAY ═══════
+  if (screen === SCREENS.HOW) {
     const sections = [
-      { title: "Crosswords", body: "A full-size themed crossword grid. Fill in all the white squares using across and down clues. Every answer connects to your chosen genre." },
-      { title: "Groove", body: "A word search grid hiding 8 music-related words. Swipe or tap to select letters in any direction. Find all 8 to complete the puzzle." },
-      { title: "Solo", body: "Guess the 5-letter music word in 6 tries. Green = right letter, right spot. Yellow = right letter, wrong spot. Gray = not in the word. Use the Hint button on clues for extra help." },
-      { title: "Mini", body: "A 5x5 crossword themed around your chosen genre. Fastest solvers hit the leaderboard. Tap Hint on any clue if you get stuck." },
+      {title:"Crosswords",body:"Fill the grid using across and down clues. Click a cell and type. Click again to switch direction. Tap the info icon on any clue for a hint."},
+      {title:"Groove",body:"Tap letters to select them in order, forming a word. Press Submit to check. Green = found. Red = wrong. Find all 8 words."},
+      {title:"Solo",body:"Guess the 5-letter word in 6 tries. Type or tap the keyboard. Green = right letter, right spot. Yellow = right letter, wrong spot. Gray = not in the word."},
+      {title:"Mini",body:"A 5x5 crossword. Click cells and type. Same controls as Crosswords but faster."},
     ];
     return (
-      <Shell title="How to Play" showBack>
-        <div style={{ padding: "20px" }}>
+      <Shell title="How to Play">
+        <div style={{padding:"20px"}}>
           {sections.map((s,i) => (
-            <div key={i} style={{ marginBottom: 12, padding: "16px", background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14, boxShadow: t.cardShadow }}>
-              <div style={{ ...f(600, 15), color: t.accent, marginBottom: 6 }}>{s.title}</div>
-              <div style={{ ...f(400, 13), color: t.textSecondary, lineHeight: 1.6 }}>{s.body}</div>
+            <div key={i} style={{marginBottom:12,padding:"16px",background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,boxShadow:t.cardShadow}}>
+              <div style={{...f(600,15),color:t.accent,marginBottom:6}}>{s.title}</div>
+              <div style={{...f(400,13),color:t.textSecondary,lineHeight:1.6}}>{s.body}</div>
             </div>
           ))}
         </div>
@@ -1113,104 +1012,85 @@ function App() {
     );
   }
 
-  // ═════════════════════════════════════════════
-  // PROFILE
-  // ═════════════════════════════════════════════
+  // ═══════ PROFILE ═══════
   if (screen === SCREENS.PROFILE) return (
-    <Shell title="Me" showBack>
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <div style={{ width: 72, height: 72, borderRadius: 20, background: t.gradientSoft, border: `2px solid ${t.accentBorder}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", ...f(700, 28), color: t.accent }}>A</div>
-        <div style={{ ...f(600, 18), color: t.text, marginBottom: 2 }}>Alex</div>
-        <div style={{ ...f(400, 12), color: t.muted, marginBottom: 20 }}>Free tier</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 20 }}>
-          {[{l:"Played",v:"87"},{l:"Streak",v:"12"},{l:"Win %",v:"94"}].map((s) => (
-            <div key={s.l} style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: 14, padding: "12px 8px", boxShadow: t.cardShadow }}>
-              <div style={{ ...f(700, 20), color: t.accent }}>{s.v}</div>
-              <div style={{ ...f(400, 10), color: t.muted, marginTop: 2 }}>{s.l}</div>
+    <Shell title="Me">
+      <div style={{padding:"20px",textAlign:"center"}}>
+        <div style={{width:72,height:72,borderRadius:20,background:t.gradientSoft,border:`2px solid ${t.accentBorder}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",...f(700,28),color:t.accent}}>A</div>
+        <div style={{...f(600,18),color:t.text,marginBottom:2}}>Alex</div>
+        <div style={{...f(400,12),color:t.muted,marginBottom:20}}>Free tier</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:20}}>
+          {[{l:"Played",v:"87"},{l:"Streak",v:"12"},{l:"Win %",v:"94"}].map(s => (
+            <div key={s.l} style={{background:t.cardBg,border:`1px solid ${t.cardBorder}`,borderRadius:14,padding:"12px 8px",boxShadow:t.cardShadow}}>
+              <div style={{...f(700,20),color:t.accent}}>{s.v}</div><div style={{...f(400,10),color:t.muted,marginTop:2}}>{s.l}</div>
             </div>
           ))}
         </div>
-        {[{l:"Settings",g:SCREENS.SETTINGS},{l:"Sign in",g:SCREENS.AUTH}].map((item) => (
-          <button key={item.l} onClick={() => navigate(item.g)} style={{
-            width: "100%", padding: "13px 16px", borderRadius: 12, marginBottom: 8,
-            background: t.cardBg, border: `1px solid ${t.cardBorder}`,
-            ...f(500, 14), color: t.text,
-            cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: t.cardShadow,
-          }}>
-            <span>{item.l}</span><IconArrow color={t.muted} size={14} />
+        {[{l:"Settings",g:SCREENS.SETTINGS},{l:"Sign in",g:SCREENS.AUTH}].map(item => (
+          <button key={item.l} onClick={() => navigate(item.g)} style={{width:"100%",padding:"13px 16px",borderRadius:12,marginBottom:8,background:t.cardBg,border:`1px solid ${t.cardBorder}`,...f(500,14),color:t.text,display:"flex",justifyContent:"space-between",alignItems:"center",boxShadow:t.cardShadow}}>
+            <span>{item.l}</span><I.Arrow c={t.muted} s={14}/>
           </button>
         ))}
       </div>
     </Shell>
   );
 
-  // ═════════════════════════════════════════════
-  // SETTINGS
-  // ═════════════════════════════════════════════
+  // ═══════ SETTINGS ═══════
   if (screen === SCREENS.SETTINGS) {
-    const Row = ({ label, toggle, on, onClick }) => (
-      <div onClick={onClick} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 0", borderBottom: `1px solid ${t.divider}`, cursor: onClick?"pointer":"default" }}>
-        <span style={{ ...f(400, 14), color: t.text }}>{label}</span>
-        {toggle ? <Toggle on={on} /> : onClick ? <IconArrow color={t.muted} size={14} /> : null}
+    const Row = ({label,toggle,on,onClick}) => (
+      <div onClick={onClick} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"13px 0",borderBottom:`1px solid ${t.divider}`,cursor:onClick?"pointer":"default"}}>
+        <span style={{...f(400,14),color:t.text}}>{label}</span>
+        {toggle ? <Toggle on={on}/> : onClick ? <I.Arrow c={t.muted} s={14}/> : null}
       </div>
     );
     return (
-      <Shell title="Settings" showBack>
-        <div style={{ padding: "8px 20px" }}>
-          <div style={{ ...f(600, 10), color: t.muted, letterSpacing: "0.1em", textTransform: "uppercase", padding: "16px 0 4px" }}>Appearance</div>
-          <Row label="Dark Mode" toggle on={darkMode} onClick={() => setDarkMode(!darkMode)} />
-          <div style={{ ...f(600, 10), color: t.muted, letterSpacing: "0.1em", textTransform: "uppercase", padding: "20px 0 4px" }}>Notifications</div>
-          <Row label="Daily Puzzles" toggle on={true} />
-          <div style={{ ...f(600, 10), color: t.muted, letterSpacing: "0.1em", textTransform: "uppercase", padding: "20px 0 4px" }}>Puzzle</div>
-          <Row label="Skip filled squares" toggle on={true} />
-          <Row label="Jump to next clue" toggle on={true} />
-          <Row label="Show Timer" toggle on={true} />
-          <Row label="High Contrast Mode" toggle on={false} />
-          <Row label="Onscreen Keyboard Only" toggle on={false} />
-          <div style={{ ...f(600, 10), color: t.muted, letterSpacing: "0.1em", textTransform: "uppercase", padding: "20px 0 4px" }}>Support</div>
-          <Row label="Help Center" onClick={() => {}} />
-          <Row label="Feedback" onClick={() => {}} />
-          <button style={{ width: "100%", padding: "13px", borderRadius: 12, marginTop: 24, background: "transparent", border: `1px solid ${darkMode?"#442222":"#FECACA"}`, ...f(500, 14), color: "#EF4444", cursor: "pointer" }}>Log Out</button>
+      <Shell title="Settings">
+        <div style={{padding:"8px 20px"}}>
+          <div style={{...f(600,10),color:t.muted,letterSpacing:"0.1em",textTransform:"uppercase",padding:"16px 0 4px"}}>Appearance</div>
+          <Row label="Dark Mode" toggle on={darkMode} onClick={() => setDarkMode(!darkMode)}/>
+          <div style={{...f(600,10),color:t.muted,letterSpacing:"0.1em",textTransform:"uppercase",padding:"20px 0 4px"}}>Notifications</div>
+          <Row label="Daily Puzzles" toggle on={true}/>
+          <div style={{...f(600,10),color:t.muted,letterSpacing:"0.1em",textTransform:"uppercase",padding:"20px 0 4px"}}>Puzzle</div>
+          <Row label="Skip filled squares" toggle on={true}/>
+          <Row label="Show Timer" toggle on={true}/>
+          <Row label="High Contrast Mode" toggle on={false}/>
+          <div style={{...f(600,10),color:t.muted,letterSpacing:"0.1em",textTransform:"uppercase",padding:"20px 0 4px"}}>Support</div>
+          <Row label="Help Center" onClick={() => {}}/>
+          <Row label="Feedback" onClick={() => {}}/>
+          <button style={{width:"100%",padding:"13px",borderRadius:12,marginTop:24,background:"transparent",border:`1px solid ${darkMode?"#442222":"#FECACA"}`,...f(500,14),color:"#EF4444"}}>Log Out</button>
         </div>
       </Shell>
     );
   }
 
-  // ═════════════════════════════════════════════
-  // ARCHIVE (Back Catalog — FREE)
-  // ═════════════════════════════════════════════
+  // ═══════ ARCHIVE ═══════
   if (screen === SCREENS.ARCHIVE) {
     const daysInMonth = 30;
     const solved = [1,2,3,4,5,6,7,8]; const perfect = [1,3,5,7];
     return (
-      <Shell title="Back Catalog" showBack>
-        <div style={{ padding: "16px 20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <IconChevron color={t.muted} size={20} dir="left" />
-            <span style={{ ...f(600, 15), color: t.text }}>April 2026</span>
-            <IconChevron color={t.muted} size={20} dir="right" />
+      <Shell title="Back Catalog">
+        <div style={{padding:"16px 20px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+            <I.Chev c={t.muted} s={20} dir="left"/>
+            <span style={{...f(600,15),color:t.text}}>April 2026</span>
+            <I.Chev c={t.muted} s={20} dir="right"/>
           </div>
-          <div style={{ display: "flex", gap: 2, background: t.pillBg, borderRadius: 10, padding: 3, border: `1px solid ${t.divider}`, marginBottom: 16 }}>
-            {["Cross","Solo","Groove","Mini"].map((g,i)=>(
-              <button key={g} style={{ flex: 1, padding: "7px 2px", borderRadius: 8, background: i===0?t.pillActive:"transparent", border: "none", ...f(i===0?600:400,11), color: i===0?t.pillText:t.muted, cursor: "pointer" }}>{g}</button>
+          <div style={{display:"flex",gap:2,background:t.pillBg,borderRadius:10,padding:3,border:`1px solid ${t.divider}`,marginBottom:16}}>
+            {["Cross","Solo","Groove","Mini"].map((g,i) => (
+              <button key={g} style={{flex:1,padding:"7px 2px",borderRadius:8,background:i===0?t.pillActive:"transparent",border:"none",...f(i===0?600:400,11),color:i===0?t.pillText:t.muted}}>{g}</button>
             ))}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, marginBottom: 4 }}>
-            {["S","M","T","W","T","F","S"].map((d,i)=><div key={i} style={{ textAlign: "center", ...f(500,10), color: t.muted, padding: "4px 0" }}>{d}</div>)}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:4}}>
+            {["S","M","T","W","T","F","S"].map((d,i) => <div key={i} style={{textAlign:"center",...f(500,10),color:t.muted,padding:"4px 0"}}>{d}</div>)}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
-            {[0,0,0].map((_,i)=><div key={`e${i}`} />)}
-            {Array.from({length:daysInMonth},(_,i)=>i+1).map((day) => {
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4}}>
+            {[0,0,0].map((_,i) => <div key={`e${i}`}/>)}
+            {Array.from({length:daysInMonth},(_,i)=>i+1).map(day => {
               const s = solved.includes(day); const p = perfect.includes(day);
               const td = day === today.getDate();
               return (
-                <div key={day} style={{
-                  aspectRatio: "1", borderRadius: 8,
-                  background: p ? t.gradientBtn : s ? t.accentSoft : t.cardBg,
-                  border: `1px solid ${td ? t.accent : s ? t.accentBorder : t.cardBorder}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}>
-                  <span style={{ ...f(500,12), color: p ? t.pillText : s ? t.accent : (day>today.getDate()?t.muted:t.textSecondary), opacity: day>today.getDate()?0.3:1 }}>{day}</span>
+                <div key={day} style={{aspectRatio:"1",borderRadius:8,background:p?t.gradientBtn:s?t.accentSoft:t.cardBg,border:`1px solid ${td?t.accent:s?t.accentBorder:t.cardBorder}`,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer"}}>
+                  <span style={{...f(500,12),color:p?t.pillText:s?t.accent:(day>today.getDate()?t.muted:t.textSecondary),opacity:day>today.getDate()?.3:1}}>{day}</span>
                 </div>
               );
             })}
@@ -1220,7 +1100,7 @@ function App() {
     );
   }
 
-  return <Shell title="Riff"><div style={{ padding: 40, textAlign: "center", color: t.muted }}>Not found</div></Shell>;
+  return <Shell title="Riff"><div style={{padding:40,textAlign:"center",color:t.muted}}>Not found</div></Shell>;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
