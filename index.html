@@ -143,6 +143,7 @@ const I = {
   Trophy: ({c,s=16}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4a2 2 0 01-2-2V5a2 2 0 012-2h2"/><path d="M18 9h2a2 2 0 002-2V5a2 2 0 00-2-2h-2"/><path d="M6 3h12v7a6 6 0 01-12 0V3z"/><path d="M9 21h6"/><path d="M12 16v5"/></svg>,
   Clock: ({c,s=14}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
   Spotify: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>,
+  Palette: ({c,s=20}) => <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><circle cx="8" cy="9" r="1.5" fill={c}/><circle cx="15" cy="8" r="1.5" fill={c}/><circle cx="16.5" cy="13" r="1.5" fill={c}/><circle cx="9" cy="14" r="1.5" fill={c}/></svg>,
 };
 
 // ── Trivia (different per screen) ──
@@ -184,58 +185,63 @@ function getGreeting(){const h=new Date().getHours();if(h<6)return"Late night se
 
 const SCREENS = {HOME:"home",CROSSWORDS:"crosswords",SOLO:"solo",MINI:"mini",GROOVE:"groove",STATS:"stats",SHARE:"share",AUTH:"auth",PROFILE:"profile",SETTINGS:"settings",HOW:"how",ARCHIVE:"archive"};
 
-// ── CROSSWORD DATA ──
-const CW_GRID = [
-  ["C","O","L","T","R","A","N"],
-  ["H","#","E","#","I","#","O"],
-  ["O","C","T","A","V","E","T"],
-  ["R","#","S","#","E","#","E"],
-  ["D","U","O","N","R","I","S"],
-  ["S","#","N","#","B","#","#"],
-  ["J","A","Z","Z","I","N","G"],
-];
-const CW_NUMS = {0:{0:1,2:2},2:{0:3,1:4},4:{0:5,1:6},6:{0:7}};
-const CW_CLUES = {
-  across:[
-    {n:"1A",clue:"Legendary saxophonist John ___",hint:"His album 'A Love Supreme' changed jazz",ans:"COLTRAN"},
-    {n:"3A",clue:"Musical interval of 8 notes",hint:"From C to next C",ans:"OCTAVE"},
-    {n:"5A",clue:"Two musicians playing together",hint:"Smaller than a trio",ans:"DUONRIS"},
-    {n:"7A",clue:"Improvising rhythmically",hint:"What a jazz musician does in the groove",ans:"JAZZING"},
-  ],
-  down:[
-    {n:"1D",clue:"___ progression (music)",hint:"A sequence of harmonies",ans:"CHORDSJ"},
-    {n:"2D",clue:"Musical time division",hint:"Eight of these in a whole note",ans:"LETSONZ"},
-    {n:"4D",clue:"Performed without preparation",hint:"A jazz specialty",ans:"AANING"},
-  ],
+// ── PUZZLE DATABASE (per genre) ──
+const PUZZLE_DB = {
+  Jazz: {
+    cw: {
+      grid:[["C","O","L","T","R","A","N"],["H","#","E","#","I","#","O"],["O","C","T","A","V","E","T"],["R","#","S","#","E","#","E"],["D","U","O","N","R","I","S"],["S","#","N","#","B","#","#"],["J","A","Z","Z","I","N","G"]],
+      nums:{0:{0:1,2:2},2:{0:3,1:4},4:{0:5,1:6},6:{0:7}},
+      clues:{across:[{n:"1A",clue:"Legendary saxophonist John ___",hint:"'A Love Supreme' artist",ans:"COLTRAN"},{n:"3A",clue:"Musical interval of 8 notes",hint:"From C to next C",ans:"OCTAVE"},{n:"5A",clue:"Pair performing together",hint:"Smaller than a trio",ans:"DUONRIS"},{n:"7A",clue:"Improvising rhythmically",hint:"Playing in the groove",ans:"JAZZING"}],down:[{n:"1D",clue:"___ progression (harmony)",hint:"Sequence of harmonies",ans:"CHORDSJ"},{n:"2D",clue:"Musical time divisions",hint:"Eighth of a whole note",ans:"LETSONZ"},{n:"4D",clue:"Without preparation",hint:"A jazz specialty",ans:"AANING"}]},
+      title:"Blue Notes",
+    },
+    mini: {
+      grid:[["M","I","L","E","S"],["O","#","A","#","W"],["N","O","T","E","S"],["K","#","I","#","E"],["S","T","N","G","T"]],
+      nums:{0:{0:1},2:{0:2,1:3},4:{0:4,1:5}},
+      clues:{across:[{n:"1A",clue:"Jazz trumpet legend Davis",hint:"First name",ans:"MILES"},{n:"2A",clue:"Musical sounds on a staff",hint:"Do Re Mi...",ans:"NOTES"},{n:"4A",clue:"Bee attack result",hint:"Ouch!",ans:"STNGT"}],down:[{n:"1D",clue:"Thelonious ___",hint:"Jazz pianist",ans:"MONKS"},{n:"3D",clue:"Latin jazz style",hint:"From South America",ans:"LATIN"}]},
+    },
+    solo: {word:"BLUES",hint:"Melancholy music, or Miles Davis feeling"},
+    groove: {theme:"Jazz Instruments",words:["SAX","BASS","DRUMS","PIANO","TRUMPET","HORN","FLUTE","ORGAN"],letters:"SAXBTRUMPETFLUTEHORNDRUMSPIANOBASSORGANRIFFAA".padEnd(64,"A").split("")},
+  },
+  Rock: {
+    cw: {
+      grid:[["H","E","N","D","R","I","X"],["A","#","O","#","I","#","#"],["R","E","V","E","R","B","S"],["D","#","E","#","F","#","T"],["S","T","L","A","F","I","A"],["#","#","S","#","S","#","G"],["C","L","A","P","T","O","E"]],
+      nums:{0:{0:1,2:2},2:{0:3,1:4},4:{0:5,1:6},6:{0:7}},
+      clues:{across:[{n:"1A",clue:"Jimi ___ (guitar god)",hint:"Purple Haze performer",ans:"HENDRIX"},{n:"3A",clue:"Echo effects",hint:"Sound bouncing back",ans:"REVERBS"},{n:"5A",clue:"Dropped a flat note",hint:"Went off-key",ans:"STLAFIA"},{n:"7A",clue:"Eric ___ (Cream guitarist)",hint:"Slowhand",ans:"CLAPTOE"}],down:[{n:"1D",clue:"Heavy, intense",hint:"Like metal music",ans:"HARDS#C"},{n:"2D",clue:"Not ever",hint:"At no time",ans:"NOVELS"},{n:"4D",clue:"Distorted guitar sound",hint:"Fuzzy tone effect",ans:"DEAFP"}]},
+      title:"Guitar Heroes",
+    },
+    mini: {
+      grid:[["R","I","F","F","S"],["O","#","U","#","T"],["C","H","Z","Z","A"],["K","#","#","#","G"],["S","H","R","E","E"]],
+      nums:{0:{0:1},2:{0:2,1:3},4:{0:4,1:5}},
+      clues:{across:[{n:"1A",clue:"Repeating guitar phrases",hint:"AC/DC's bread and butter",ans:"RIFFS"},{n:"2A",clue:"Jazz or fizzy sound",hint:"Energetic confusion",ans:"CHZZA"},{n:"4A",clue:"High-pitched scream (var.)",hint:"Metal vocal technique",ans:"SHREE"}],down:[{n:"1D",clue:"Hard music genre",hint:"Led Zeppelin's genre",ans:"ROCKS"},{n:"3D",clue:"Guitar effect, distortion",hint:"Fuzzy sound pedal",ans:"FUZZ#R"}]},
+    },
+    solo: {word:"STAGE",hint:"Where Mick Jagger struts"},
+    groove: {theme:"Rock Subgenres",words:["PUNK","METAL","GRUNGE","PROG","INDIE","BLUES","SURF","GLAM"],letters:"PUNKMETALGRUNGEPROGINDIEBLUESURFGLAMROCKBAND".padEnd(64,"A").split("")},
+  },
+  "Pop Culture": {
+    cw: {
+      grid:[["S","T","R","E","A","M","S"],["W","#","E","#","L","#","T"],["I","C","O","N","B","U","A"],["F","#","N","#","U","#","R"],["T","R","E","N","M","I","S"],["#","#","D","#","S","#","#"],["V","I","R","A","L","L","Y"]],
+      nums:{0:{0:1,2:2},2:{0:3,1:4},4:{0:5,1:6},6:{0:7}},
+      clues:{across:[{n:"1A",clue:"Spotify play counts",hint:"Digital listens",ans:"STREAMS"},{n:"3A",clue:"Cultural symbol",hint:"Madonna, Beyonce level",ans:"ICONBUA"},{n:"5A",clue:"Popular direction",hint:"What's hot right now",ans:"TRENMIS"},{n:"7A",clue:"Spreading online rapidly",hint:"TikTok's dream",ans:"VIRALLY"}],down:[{n:"1D",clue:"Taylor ___ (pop queen)",hint:"Eras Tour artist",ans:"SWIFT#V"},{n:"2D",clue:"___ album (band's best-of)",hint:"Greatest hits collection",ans:"RECORD"},{n:"4D",clue:"Musical collections",hint:"Spotify curated lists",ans:"ENNAY"}]},
+      title:"Chart Toppers",
+    },
+    mini: {
+      grid:[["S","T","A","N","S"],["T","#","L","#","O"],["A","D","E","L","E"],["R","#","R","#","G"],["S","H","A","R","E"]],
+      nums:{0:{0:1},2:{0:2,1:3},4:{0:4,1:5}},
+      clues:{across:[{n:"1A",clue:"Obsessive superfans",hint:"Named from Eminem",ans:"STANS"},{n:"2A",clue:"British singer, one name",hint:"Hello, Rolling in the Deep",ans:"ADELE"},{n:"4A",clue:"Post on social media",hint:"Spread content",ans:"SHARE"}],down:[{n:"1D",clue:"Famous people",hint:"Celebrities",ans:"STARS"},{n:"3D",clue:"Warning, heads-up",hint:"Spoiler ___!",ans:"ALERT"}]},
+    },
+    solo: {word:"VIRAL",hint:"TikTok's ultimate goal"},
+    groove: {theme:"Streaming Terms",words:["SPOTIFY","SHUFFLE","SKIP","QUEUE","LOOP","REPEAT","PLAY","SHARE"],letters:"SPOTIFYSHUFFLESKIPQUEUELOOPREPEATPLAYSHAREAA".padEnd(64,"A").split("")},
+  },
 };
 
-// ── MINI DATA ──
-const MINI_GRID = [
-  ["M","I","L","E","S"],
-  ["O","#","A","#","W"],
-  ["N","O","T","E","S"],
-  ["K","#","I","#","E"],
-  ["B","L","N","D","T"],
-];
-const MINI_NUMS = {0:{0:1},2:{0:2,1:3},4:{0:4,1:5}};
-const MINI_CLUES = {
-  across:[
-    {n:"1A",clue:"Jazz trumpet legend Davis",hint:"First name, not last",ans:"MILES"},
-    {n:"2A",clue:"Musical sounds",hint:"Written on a staff",ans:"NOTES"},
-    {n:"4A",clue:"Visually unclear",hint:"Opposite of sharp",ans:"BLNDT"},
-  ],
-  down:[
-    {n:"1D",clue:"Thelonious ___",hint:"Jazz pianist, unique style",ans:"MONKB"},
-    {n:"3D",clue:"Like a musical line",hint:"Not rhythm, but ___",ans:"LATIN"},
-  ],
+// Color palette overrides
+const COLOR_PALETTES = {
+  Default: null,
+  "Cal Poly Green": {accent:"#1E4D2B",accentHover:"#2A6B3C",gradient:"linear-gradient(135deg,#1E4D2B 0%,#3A7D4A 50%,#1E4D2B 100%)",gradientBtn:"linear-gradient(135deg,#1E4D2B 0%,#2D6B3A 50%,#174022 100%)",accentSoft:"rgba(30,77,43,0.10)",accentBorder:"rgba(30,77,43,0.28)",pillActive:"linear-gradient(135deg,#1E4D2B 0%,#3A7D4A 100%)",progressFill:"linear-gradient(90deg,#1E4D2B,#3A7D4A)"},
+  "Blooma": {accent:"#E89BB5",accentHover:"#D4849E",gradient:"linear-gradient(135deg,#E89BB5 0%,#F4C2D4 50%,#E89BB5 100%)",gradientBtn:"linear-gradient(135deg,#E89BB5 0%,#F0AABC 50%,#D4849E 100%)",accentSoft:"rgba(232,155,181,0.12)",accentBorder:"rgba(232,155,181,0.30)",pillActive:"linear-gradient(135deg,#E89BB5 0%,#F4C2D4 100%)",progressFill:"linear-gradient(90deg,#E89BB5,#F4C2D4)"},
+  "Gridline Supply": {accent:"#2DD4BF",accentHover:"#14B8A6",gradient:"linear-gradient(135deg,#2DD4BF 0%,#5EEAD4 50%,#2DD4BF 100%)",gradientBtn:"linear-gradient(135deg,#2DD4BF 0%,#3DE8D0 50%,#14B8A6 100%)",accentSoft:"rgba(45,212,191,0.10)",accentBorder:"rgba(45,212,191,0.28)",pillActive:"linear-gradient(135deg,#2DD4BF 0%,#5EEAD4 100%)",progressFill:"linear-gradient(90deg,#2DD4BF,#5EEAD4)"},
+  "Zaphirae": {accent:"#3B82F6",accentHover:"#2563EB",gradient:"linear-gradient(135deg,#3B82F6 0%,#60A5FA 50%,#3B82F6 100%)",gradientBtn:"linear-gradient(135deg,#3B82F6 0%,#4F8FF8 50%,#2563EB 100%)",accentSoft:"rgba(59,130,246,0.10)",accentBorder:"rgba(59,130,246,0.28)",pillActive:"linear-gradient(135deg,#3B82F6 0%,#60A5FA 100%)",progressFill:"linear-gradient(90deg,#3B82F6,#60A5FA)"},
 };
-
-// ── SOLO WORD ──
-const SOLO_WORD = "BLUES";
-
-// ── GROOVE WORDS ──
-const GROOVE_LETTERS = "COLTRANEDSAXBASSRIFFMONKDRUMSETCOMPGROOVEJZ".padEnd(64,"A").split("");
-const GROOVE_WORDS = ["COLTRANE","SAX","MONK","BASS","DRUMS","RIFF","COMP","GROOVE"];
 
 // ═══════ MAIN APP ═══════
 function App() {
@@ -244,6 +250,8 @@ function App() {
   const [genre, setGenre] = useState("Jazz");
   const [difficulty, setDifficulty] = useState("Beginner");
   const [history, setHistory] = useState([]);
+  const [colorOverride, setColorOverride] = useState("Default");
+  const [showPalette, setShowPalette] = useState(false);
 
   // Timer
   const [timerSec, setTimerSec] = useState(0);
@@ -256,6 +264,18 @@ function App() {
     return () => clearInterval(timerRef.current);
   }, [timerRunning]);
   const fmtTime = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+
+  // Derived puzzle data from genre
+  const PZ = PUZZLE_DB[genre];
+  const CW_GRID = PZ.cw.grid;
+  const CW_NUMS = PZ.cw.nums;
+  const CW_CLUES = PZ.cw.clues;
+  const MINI_GRID = PZ.mini.grid;
+  const MINI_NUMS = PZ.mini.nums;
+  const MINI_CLUES = PZ.mini.clues;
+  const SOLO_WORD = PZ.solo.word;
+  const GROOVE_WORDS = PZ.groove.words;
+  const GROOVE_LETTERS = PZ.groove.letters;
 
   // Crossword state
   const [cwCells, setCwCells] = useState(() => CW_GRID.map(r => r.map(c => c === "#" ? "#" : "")));
@@ -296,7 +316,29 @@ function App() {
     setTimerRunning(false);
   };
 
-  const t = darkMode ? GENRE_THEMES[genre].dark : GENRE_THEMES[genre].light;
+  // Reset game state when genre changes
+  const prevGenreRef = useRef(genre);
+  useEffect(() => {
+    if (prevGenreRef.current !== genre) {
+      prevGenreRef.current = genre;
+      const pz = PUZZLE_DB[genre];
+      setCwCells(pz.cw.grid.map(r => r.map(c => c === "#" ? "#" : "")));
+      setCwActive([0,0]); setCwDir("across"); setCwRevealed(false);
+      setMiniCells(pz.mini.grid.map(r => r.map(c => c === "#" ? "#" : "")));
+      setMiniActive([0,0]); setMiniDir("across");
+      setSoloGuesses([]); setSoloCurrent(""); setSoloGameOver(false);
+      setGrooveSelected([]); setGrooveFound([]); setGrooveWrong(false);
+    }
+  }, [genre]);
+
+  // Apply color override
+  let t = darkMode ? GENRE_THEMES[genre].dark : GENRE_THEMES[genre].light;
+  const palOver = COLOR_PALETTES[colorOverride];
+  if (palOver) {
+    t = {...t, accent:palOver.accent, accentHover:palOver.accentHover, gradient:palOver.gradient,
+      gradientBtn:palOver.gradientBtn, accentSoft:palOver.accentSoft, accentBorder:palOver.accentBorder,
+      pillActive:palOver.pillActive, progressFill:palOver.progressFill};
+  }
   const today = new Date();
   const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -312,18 +354,43 @@ function App() {
 
   // ── Bottom Nav (all pages except home) ──
   const BottomNav = () => (
-    <div style={{position:"fixed",bottom:0,left:0,right:0,background:t.navBg,borderTop:`1px solid ${t.navBorder}`,display:"flex",justifyContent:"center",zIndex:100}}>
+    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100}}>
+      {showPalette && (
+        <div style={{background:t.navBg,borderTop:`1px solid ${t.navBorder}`,padding:"14px 20px",display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center",maxWidth:420,margin:"0 auto"}}>
+          {Object.keys(COLOR_PALETTES).map(name => {
+            const pal = COLOR_PALETTES[name];
+            const active = colorOverride === name;
+            const swatch = pal ? pal.accent : t.accent;
+            return (
+              <button key={name} onClick={() => {setColorOverride(name);setShowPalette(false);}} style={{
+                display:"flex",alignItems:"center",gap:6,padding:"6px 12px",borderRadius:20,
+                background:active?t.accentSoft:"transparent",border:`1px solid ${active?t.accentBorder:t.divider}`,
+                cursor:"pointer",...f(active?600:400,11),color:active?t.accent:t.textSecondary,
+              }}>
+                <span style={{width:14,height:14,borderRadius:7,background:name==="Default"?t.gradient:swatch,display:"inline-block",border:"1px solid "+t.divider}}/>
+                {name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    <div style={{background:t.navBg,borderTop:`1px solid ${t.navBorder}`,display:"flex",justifyContent:"center"}}>
       <div style={{display:"flex",maxWidth:420,width:"100%",justifyContent:"space-around",padding:"8px 0 12px"}}>
         {[
           {icon:I.Home,label:"Home",scr:SCREENS.HOME},
           {icon:I.Bar,label:"Stats",scr:SCREENS.STATS},
           {icon:I.Cal,label:"Archive",scr:SCREENS.ARCHIVE},
+          {icon:I.Palette,label:"Colors",scr:"COLORS"},
           {icon:I.User,label:"Profile",scr:SCREENS.PROFILE},
         ].map(item => {
-          const active = screen === item.scr;
+          const active = item.scr === "COLORS" ? showPalette : screen === item.scr;
           return (
-            <button key={item.label} onClick={() => {setHistory(h=>[...h,screen]);setScreen(item.scr);setTimerRunning(false);}} style={{
-              background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"4px 12px",
+            <button key={item.label} onClick={() => {
+              if (item.scr === "COLORS") { setShowPalette(!showPalette); return; }
+              setShowPalette(false);
+              setHistory(h=>[...h,screen]);setScreen(item.scr);setTimerRunning(false);
+            }} style={{
+              background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"4px 10px",
             }}>
               <item.icon c={active ? t.accent : t.muted} s={20} />
               <span style={{...f(active?600:400,9),color:active?t.accent:t.muted}}>{item.label}</span>
@@ -331,6 +398,7 @@ function App() {
           );
         })}
       </div>
+    </div>
     </div>
   );
 
@@ -712,7 +780,8 @@ function App() {
     return (
       <Shell title="Solo">
         <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Puzzle #42 — {dateStr} — {genre} — {difficulty}</span></div>
-        <div style={{textAlign:"center",padding:"4px 20px 16px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 8px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
+        <div style={{textAlign:"center",padding:"0 20px 12px"}}><span style={{...f(400,12),color:t.accent,fontStyle:"italic"}}>{PZ.solo.hint}</span></div>
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,padding:"0 20px"}}>
           {allRows.map((row,ri) => {
             const isCurrent = ri === soloGuesses.length && !soloGameOver;
@@ -822,7 +891,8 @@ function App() {
     const SIZE = 8;
     return (
       <Shell title="Groove">
-        <div style={{textAlign:"center",padding:"12px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Find 8 words — Puzzle #42 — {genre} — {difficulty}</span></div>
+        <div style={{textAlign:"center",padding:"12px 20px 0"}}><span style={{...f(600,13),color:t.accent}}>{PZ.groove.theme}</span></div>
+        <div style={{textAlign:"center",padding:"4px 20px 4px"}}><span style={{...f(400,11),color:t.muted}}>Find {GROOVE_WORDS.length} words — Puzzle #42 — {genre} — {difficulty}</span></div>
         <div style={{textAlign:"center",padding:"4px 20px 12px"}}><span style={{...f(300,26),color:t.textSecondary,letterSpacing:"0.08em"}}>{fmtTime(timerSec)}</span></div>
         <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",padding:"0 20px 10px"}}>
           {GROOVE_WORDS.map(w => {
