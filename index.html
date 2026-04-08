@@ -185,54 +185,307 @@ function getGreeting(){const h=new Date().getHours();if(h<6)return"Late night se
 
 const SCREENS = {HOME:"home",CROSSWORDS:"crosswords",SOLO:"solo",MINI:"mini",GROOVE:"groove",STATS:"stats",SHARE:"share",AUTH:"auth",PROFILE:"profile",SETTINGS:"settings",HOW:"how",ARCHIVE:"archive"};
 
-// ── PUZZLE DATABASE (per genre) ──
+// ── PUZZLE DATABASE (per genre, 7 days each) ──
 const PUZZLE_DB = {
   Jazz: {
     cw: {
-      grid:[["C","O","L","T","R","A","N"],["H","#","E","#","I","#","O"],["O","C","T","A","V","E","T"],["R","#","S","#","E","#","E"],["D","U","O","N","R","I","S"],["S","#","N","#","B","#","#"],["J","A","Z","Z","I","N","G"]],
-      nums:{0:{0:1,2:2},2:{0:3,1:4},4:{0:5,1:6},6:{0:7}},
-      clues:{across:[{n:"1A",clue:"Legendary saxophonist John ___",hint:"'A Love Supreme' artist",ans:"COLTRAN"},{n:"3A",clue:"Musical interval of 8 notes",hint:"From C to next C",ans:"OCTAVE"},{n:"5A",clue:"Pair performing together",hint:"Smaller than a trio",ans:"DUONRIS"},{n:"7A",clue:"Improvising rhythmically",hint:"Playing in the groove",ans:"JAZZING"}],down:[{n:"1D",clue:"___ progression (harmony)",hint:"Sequence of harmonies",ans:"CHORDSJ"},{n:"2D",clue:"Musical time divisions",hint:"Eighth of a whole note",ans:"LETSONZ"},{n:"4D",clue:"Without preparation",hint:"A jazz specialty",ans:"AANING"}]},
-      title:"Blue Notes",
+      grid:[["O","R","B","#","#","#","#"],["V","A","L","E","#","#","#"],["E","V","E","N","T","#","#"],["R","E","N","T","A","L","#"],["#","#","D","E","L","A","Y"],["#","#","#","R","O","T","E"],["#","#","#","#","N","E","W"]],
+      nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+      clues:{across:[{n:"1A",clue:"Celestial body that orbits at night",hint:"Heavenly object",ans:"ORB"},{n:"4A",clue:"Farewell in Italian, or a scenic valley",hint:"Goodbye, or low place",ans:"VALE"},{n:"6A",clue:"Jazz festival or any notable happening",hint:"Occurrence",ans:"EVENT"},{n:"8A",clue:"What you get when you lease a tuxedo for the gig",hint:"Temporary agreement",ans:"RENTAL"},{n:"10A",clue:"When the bandleader\'s late getting to the stage",hint:"Setback",ans:"DELAY"},{n:"12A",clue:"Mechanical repetition, unlike jazz improvisation",hint:"Memorized",ans:"ROTE"},{n:"13A",clue:"Fresh take on a standard",hint:"Recently made",ans:"NEW"}],down:[{n:"1D",clue:"Finished the set",hint:"Completed",ans:"OVER"},{n:"2D",clue:"What critics do about a standout performance",hint:"Praise enthusiastically",ans:"RAVE"},{n:"3D",clue:"What musicians do to create harmony",hint:"Mix together",ans:"BLEND"},{n:"5D",clue:"Come into the stage, spotlight awaits",hint:"Go in",ans:"ENTER"},{n:"7D",clue:"Eagle\'s claw or soprano sax\'s grip?",hint:"Bird\'s claw",ans:"TALON"},{n:"9D",clue:"Jazz Time: always arriving after the beat",hint:"Behind schedule",ans:"LATE"},{n:"11D",clue:"Tree with the wood texture of an upright bass",hint:"Conifer",ans:"YEW"}]},
+      title:"Jazz Crossword Day 1",
     },
+    cwDays: [
+      {
+        grid:[["O","R","B","#","#","#","#"],["V","A","L","E","#","#","#"],["E","V","E","N","T","#","#"],["R","E","N","T","A","L","#"],["#","#","D","E","L","A","Y"],["#","#","#","R","O","T","E"],["#","#","#","#","N","E","W"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"Celestial body that orbits at night",hint:"Heavenly object",ans:"ORB"},{n:"4A",clue:"Farewell in Italian, or a scenic valley",hint:"Goodbye, or low place",ans:"VALE"},{n:"6A",clue:"Jazz festival or any notable happening",hint:"Occurrence",ans:"EVENT"},{n:"8A",clue:"What you get when you lease a tuxedo for the gig",hint:"Temporary agreement",ans:"RENTAL"},{n:"10A",clue:"When the bandleader\'s late getting to the stage",hint:"Setback",ans:"DELAY"},{n:"12A",clue:"Mechanical repetition, unlike jazz improvisation",hint:"Memorized",ans:"ROTE"},{n:"13A",clue:"Fresh take on a standard",hint:"Recently made",ans:"NEW"}],down:[{n:"1D",clue:"Finished the set",hint:"Completed",ans:"OVER"},{n:"2D",clue:"What critics do about a standout performance",hint:"Praise enthusiastically",ans:"RAVE"},{n:"3D",clue:"What musicians do to create harmony",hint:"Mix together",ans:"BLEND"},{n:"5D",clue:"Come into the stage, spotlight awaits",hint:"Go in",ans:"ENTER"},{n:"7D",clue:"Eagle\'s claw or soprano sax\'s grip?",hint:"Bird\'s claw",ans:"TALON"},{n:"9D",clue:"Jazz Time: always arriving after the beat",hint:"Behind schedule",ans:"LATE"},{n:"11D",clue:"Tree with the wood texture of an upright bass",hint:"Conifer",ans:"YEW"}]},
+        title:"Jazz Crossword Day 1",
+      },
+      {
+        grid:[["O","R","B","#","#","#","#"],["R","O","O","M","#","#","#"],["A","B","O","U","T","#","#"],["L","E","S","S","O","N","#"],["#","#","T","I","T","A","N"],["#","#","#","C","A","V","E"],["#","#","#","#","L","E","T"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"The Earth is one, hanging in space",hint:"Round heavenly body",ans:"ORB"},{n:"4A",clue:"Where the jazz quartet practices",hint:"Space to fill",ans:"ROOM"},{n:"6A",clue:"Approximately; \'round midnight\', so to speak",hint:"Roughly",ans:"ABOUT"},{n:"8A",clue:"What the master musician gives the apprentice",hint:"Instruction",ans:"LESSON"},{n:"10A",clue:"Miles Davis was one in trumpet mastery",hint:"Giant",ans:"TITAN"},{n:"12A",clue:"Where stalactites form, or a jazz club basement vibe",hint:"Underground space",ans:"CAVE"},{n:"13A",clue:"Allow, or tennis service fault",hint:"Permit",ans:"LET"}],down:[{n:"1D",clue:"Jazz tradition: learning by ear, not sheet music",hint:"Spoken",ans:"ORAL"},{n:"2D",clue:"Stage fashion for the classical musician",hint:"Garment",ans:"ROBE"},{n:"3D",clue:"Amplified sound, or encouragement at the gig",hint:"Increase",ans:"BOOST"},{n:"5D",clue:"What brings the jazz club alive",hint:"Sound art",ans:"MUSIC"},{n:"7D",clue:"Complete; adding up all the measures",hint:"Entire amount",ans:"TOTAL"},{n:"9D",clue:"The hub of a wheel, or part of a church",hint:"Center",ans:"NAVE"},{n:"11D",clue:"What catches the ball, or the result after deductions",hint:"Mesh",ans:"NET"}]},
+        title:"Jazz Crossword Day 2",
+      },
+      {
+        grid:[["H","A","S","#","#","#","#"],["E","X","A","M","#","#","#"],["A","L","L","O","T","#","#"],["R","E","A","D","E","R","#"],["#","#","D","E","P","O","T"],["#","#","#","L","I","A","R"],["#","#","#","#","D","R","Y"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"Possesses, like \'he ___ the chops to play bebop\'",hint:"Owns",ans:"HAS"},{n:"4A",clue:"Test your knowledge, or the saxophonist\'s audition",hint:"Assessment",ans:"EXAM"},{n:"6A",clue:"Distribute practice time among all the scales",hint:"Assign",ans:"ALLOT"},{n:"8A",clue:"One who interprets sheet music—or tarot at the club",hint:"Interpreter",ans:"READER"},{n:"10A",clue:"Station for trains, or storage place",hint:"Terminal",ans:"DEPOT"},{n:"12A",clue:"One who bends the truth, or a \'fibbing\' musician",hint:"Dishonest person",ans:"LIAR"},{n:"13A",clue:"Lacking moisture, or a joke with no punchline",hint:"Not wet",ans:"DRY"}],down:[{n:"1D",clue:"Listen to that trumpet solo!",hint:"Perceive sound",ans:"HEAR"},{n:"2D",clue:"Rod on which a wheel turns",hint:"Wheel rod",ans:"AXLE"},{n:"3D",clue:"Garden dish; what\'s tossed before dinner jazz",hint:"Lettuce dish",ans:"SALAD"},{n:"5D",clue:"Template to follow, or fashion icon",hint:"Example",ans:"MODEL"},{n:"7D",clue:"Lukewarm applause doesn\'t cut it at a jazz club",hint:"Barely warm",ans:"TEPID"},{n:"9D",clue:"The crowd\'s reaction to a killer set",hint:"Loud sound",ans:"ROAR"},{n:"11D",clue:"Attempt; what you do when first learning chords",hint:"Endeavor",ans:"TRY"}]},
+        title:"Jazz Crossword Day 3",
+      },
+      {
+        grid:[["H","A","S","#","#","#","#"],["E","X","A","M","#","#","#"],["A","L","L","O","T","#","#"],["L","E","A","D","E","R","#"],["#","#","D","E","P","O","T"],["#","#","#","L","I","A","R"],["#","#","#","#","D","R","Y"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"Chet Baker ___ that ballad touch",hint:"Owns",ans:"HAS"},{n:"4A",clue:"The audition puts you through a real ___",hint:"Test",ans:"EXAM"},{n:"6A",clue:"Bandleaders ___ solo space to each musician",hint:"Distribute",ans:"ALLOT"},{n:"8A",clue:"The bandleader calls the shots on stage",hint:"Guide",ans:"LEADER"},{n:"10A",clue:"Grand Central ___ or any train station",hint:"Station",ans:"DEPOT"},{n:"12A",clue:"Nobody believes what the fibber says",hint:"Dishonest person",ans:"LIAR"},{n:"13A",clue:"Toast that\'s burnt, or humor without laughs",hint:"Not moist",ans:"DRY"}],down:[{n:"1D",clue:"Music ___ the soul, they say",hint:"Make better",ans:"HEAL"},{n:"2D",clue:"Spinning rod on a rolling wheel",hint:"Wheel\'s rod",ans:"AXLE"},{n:"3D",clue:"Mixed greens served before the main act",hint:"Leafy dish",ans:"SALAD"},{n:"5D",clue:"Imitate the master\'s technique",hint:"Example to follow",ans:"MODEL"},{n:"7D",clue:"Reception that\'s more \'meh\' than magnificent",hint:"Lukewarm",ans:"TEPID"},{n:"9D",clue:"The audience\'s thunderous approval",hint:"Loud sound",ans:"ROAR"},{n:"11D",clue:"Attempt that scale again",hint:"Endeavor",ans:"TRY"}]},
+        title:"Jazz Crossword Day 4",
+      },
+      {
+        grid:[["S","A","P","#","#","#","#"],["T","I","L","L","#","#","#"],["I","D","E","A","L","#","#"],["R","E","A","S","O","N","#"],["#","#","D","E","C","O","R"],["#","#","#","R","A","T","E"],["#","#","#","#","L","E","D"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"Tree fluid, or a naive person",hint:"Gullible person",ans:"SAP"},{n:"4A",clue:"Cash register, or \'work until...\'",hint:"Up to",ans:"TILL"},{n:"6A",clue:"Perfect audition performance",hint:"Perfect",ans:"IDEAL"},{n:"8A",clue:"The \'why\' behind the music\'s meaning",hint:"Cause",ans:"REASON"},{n:"10A",clue:"How you dress up the jazz club interior",hint:"Furnishings",ans:"DECOR"},{n:"12A",clue:"Grade the performance, or speed of the tempo",hint:"Evaluate",ans:"RATE"},{n:"13A",clue:"The conductor ___ the orchestra through the piece",hint:"Guided",ans:"LED"}],down:[{n:"1D",clue:"What a good solo does to the audience",hint:"Mix up",ans:"STIR"},{n:"2D",clue:"Assistant helping the bandleader organize",hint:"Helper",ans:"AIDE"},{n:"3D",clue:"Beg for an encore after that set",hint:"Beg",ans:"PLEAD"},{n:"5D",clue:"Light beam focused with precision",hint:"Beam",ans:"LASER"},{n:"7D",clue:"Jazz club in the neighborhood",hint:"Nearby",ans:"LOCAL"},{n:"9D",clue:"A single sound played on trumpet",hint:"Musical tone",ans:"NOTE"},{n:"11D",clue:"The color of the velvet ropes at the club",hint:"Color",ans:"RED"}]},
+        title:"Jazz Crossword Day 5",
+      },
+      {
+        grid:[["M","O","B","#","#","#","#"],["E","A","R","L","#","#","#"],["S","T","O","O","D","#","#"],["S","H","O","W","E","R","#"],["#","#","M","E","L","O","N"],["#","#","#","R","A","T","E"],["#","#","#","#","Y","E","W"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"Crowd pressing toward the stage",hint:"Throng",ans:"MOB"},{n:"4A",clue:"Jazz pianist Hines earned this title",hint:"Noble rank",ans:"EARL"},{n:"6A",clue:"The pianist ___ to take a bow",hint:"Rose up",ans:"STOOD"},{n:"8A",clue:"Applause ___ down on the performers",hint:"Rainfall or praise",ans:"SHOWER"},{n:"10A",clue:"Cantaloupe or honeydew fruit",hint:"Summer fruit",ans:"MELON"},{n:"12A",clue:"Speed of the music, or how you rank it",hint:"Evaluate",ans:"RATE"},{n:"13A",clue:"Evergreen tree with red berries",hint:"Conifer",ans:"YEW"}],down:[{n:"1D",clue:"Chaotic aftermath of a wild jam session",hint:"Disorder",ans:"MESS"},{n:"2D",clue:"Solemn promise musicians make to the music",hint:"Pledge",ans:"OATH"},{n:"3D",clue:"Sweep the stage clean before the performance",hint:"Cleaning tool",ans:"BROOM"},{n:"5D",clue:"Reduce the volume on that amp",hint:"Decrease",ans:"LOWER"},{n:"7D",clue:"The opening act\'s technical ___ pushed back showtime",hint:"Setback",ans:"DELAY"},{n:"9D",clue:"Mechanical learning without understanding",hint:"Memorization",ans:"ROTE"},{n:"11D",clue:"Cutting-edge composition just premiered",hint:"Recent",ans:"NEW"}]},
+        title:"Jazz Crossword Day 6",
+      },
+      {
+        grid:[["G","O","T","#","#","#","#"],["U","P","O","N","#","#","#"],["L","A","T","E","R","#","#"],["F","L","A","V","O","R","#"],["#","#","L","E","G","A","L"],["#","#","#","R","U","N","E"],["#","#","#","#","E","G","G"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"\'I ___ rhythm\'—the jazz standard",hint:"Obtained",ans:"GOT"},{n:"4A",clue:"Once ___ a time, jazz was born in New Orleans",hint:"On",ans:"UPON"},{n:"6A",clue:"See you ___ at the club tomorrow",hint:"Eventually",ans:"LATER"},{n:"8A",clue:"Each musician brings their own ___ to the tune",hint:"Taste",ans:"FLAVOR"},{n:"10A",clue:"Above board, or valid in court",hint:"Lawful",ans:"LEGAL"},{n:"12A",clue:"Ancient symbol carved in stone",hint:"Ancient letter",ans:"RUNE"},{n:"13A",clue:"What comes before the chicken",hint:"Oval object",ans:"EGG"}],down:[{n:"1D",clue:"Wide gap between two notes",hint:"Wide gap",ans:"GULF"},{n:"2D",clue:"Gemstone that plays with light",hint:"Precious stone",ans:"OPAL"},{n:"3D",clue:"Add up all the improvised bars",hint:"Complete sum",ans:"TOTAL"},{n:"5D",clue:"___ say never when it comes to jazz surprises",hint:"Not ever",ans:"NEVER"},{n:"7D",clue:"An unpredictable, mischievous musician",hint:"Scoundrel",ans:"ROGUE"},{n:"9D",clue:"The bell ___ to signal intermission",hint:"Sounded",ans:"RANG"},{n:"11D",clue:"One of four on a stool at the keyboard",hint:"Limb",ans:"LEG"}]},
+        title:"Jazz Crossword Day 7",
+      },
+    ],
     mini: {
-      grid:[["M","I","L","E","S"],["O","#","A","#","W"],["N","O","T","E","S"],["K","#","I","#","E"],["S","T","N","G","T"]],
-      nums:{0:{0:1},2:{0:2,1:3},4:{0:4,1:5}},
-      clues:{across:[{n:"1A",clue:"Jazz trumpet legend Davis",hint:"First name",ans:"MILES"},{n:"2A",clue:"Musical sounds on a staff",hint:"Do Re Mi...",ans:"NOTES"},{n:"4A",clue:"Bee attack result",hint:"Ouch!",ans:"STNGT"}],down:[{n:"1D",clue:"Thelonious ___",hint:"Jazz pianist",ans:"MONKS"},{n:"3D",clue:"Latin jazz style",hint:"From South America",ans:"LATIN"}]},
+      grid:[["I","C","E","#","I"],["S","A","L","A","D"],["S","L","I","C","E"],["U","L","T","R","A"],["E","#","E","E","L"]],
+      nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+      clues:{across:[{n:"1A",clue:"What a cool performance does—it\'s frozen solid",hint:"Frozen water",ans:"ICE"},{n:"5A",clue:"Mixed greens before the jazz starts",hint:"Leafy dish",ans:"SALAD"},{n:"7A",clue:"A piece of pie, or a swing of the trumpet",hint:"Piece",ans:"SLICE"},{n:"8A",clue:"Beyond ordinary—that solo was ___",hint:"Extreme",ans:"ULTRA"},{n:"9A",clue:"Slippery river creature",hint:"Aquatic animal",ans:"EEL"}],down:[{n:"1D",clue:"Magazine edition, or a problem to solve",hint:"Problem",ans:"ISSUE"},{n:"2D",clue:"What the bandleader does to start the tune",hint:"Summon",ans:"CALL"},{n:"3D",clue:"The top musicians in the jazz world",hint:"Best of the best",ans:"ELITE"},{n:"6D",clue:"Land measurement, roughly a football field",hint:"Land unit",ans:"ACRE"},{n:"4D",clue:"Perfect tempo for the ballad",hint:"Perfect",ans:"IDEAL"}]},
     },
+    miniDays: [
+      {
+        grid:[["I","C","E","#","I"],["S","A","L","A","D"],["S","L","I","C","E"],["U","L","T","R","A"],["E","#","E","E","L"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"What a cool performance does—it\'s frozen solid",hint:"Frozen water",ans:"ICE"},{n:"5A",clue:"Mixed greens before the jazz starts",hint:"Leafy dish",ans:"SALAD"},{n:"7A",clue:"A piece of pie, or a swing of the trumpet",hint:"Piece",ans:"SLICE"},{n:"8A",clue:"Beyond ordinary—that solo was ___",hint:"Extreme",ans:"ULTRA"},{n:"9A",clue:"Slippery river creature",hint:"Aquatic animal",ans:"EEL"}],down:[{n:"1D",clue:"Magazine edition, or a problem to solve",hint:"Problem",ans:"ISSUE"},{n:"2D",clue:"What the bandleader does to start the tune",hint:"Summon",ans:"CALL"},{n:"3D",clue:"The top musicians in the jazz world",hint:"Best of the best",ans:"ELITE"},{n:"6D",clue:"Land measurement, roughly a football field",hint:"Land unit",ans:"ACRE"},{n:"4D",clue:"Perfect tempo for the ballad",hint:"Perfect",ans:"IDEAL"}]},
+      },
+      {
+        grid:[["T","H","E","#","S"],["R","E","A","C","T"],["A","R","G","U","E"],["D","E","L","T","A"],["E","#","E","E","L"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"___ Beatles, or ___ Commodores",hint:"Article",ans:"THE"},{n:"5A",clue:"How the crowd responds to a wild trumpet break",hint:"Respond",ans:"REACT"},{n:"7A",clue:"Debate about which jazz era was greatest",hint:"Disagree",ans:"ARGUE"},{n:"8A",clue:"Mississippi ___, birthplace of blues and jazz",hint:"River region",ans:"DELTA"},{n:"9A",clue:"Slimy creature that swims upstream",hint:"Fish",ans:"EEL"}],down:[{n:"1D",clue:"Swapping solos between musicians—a jazz tradition",hint:"Exchange",ans:"TRADE"},{n:"2D",clue:"Right ___ is where the music happens",hint:"In this place",ans:"HERE"},{n:"3D",clue:"Bird with talons, or a golf score",hint:"Bird",ans:"EAGLE"},{n:"6D",clue:"An adorable melody that sticks in your head",hint:"Attractive",ans:"CUTE"},{n:"4D",clue:"Take what isn\'t yours, or sneak away",hint:"Thieve",ans:"STEAL"}]},
+      },
+      {
+        grid:[["M","E","N","#","B"],["O","X","I","D","E"],["T","I","G","E","R"],["O","T","H","E","R"],["R","#","T","R","Y"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"The musicians on stage",hint:"Males",ans:"MEN"},{n:"5A",clue:"Iron ___ makes things rusty",hint:"Chemical compound",ans:"OXIDE"},{n:"7A",clue:"Big cat striped like a tabby",hint:"Wild cat",ans:"TIGER"},{n:"8A",clue:"The ___ side of the record",hint:"Alternate",ans:"OTHER"},{n:"9A",clue:"Attempt to play those tricky chord changes",hint:"Attempt",ans:"TRY"}],down:[{n:"1D",clue:"Engine that powers the music delivery",hint:"Engine",ans:"MOTOR"},{n:"2D",clue:"Way out of the club when the set\'s over",hint:"Leave through here",ans:"EXIT"},{n:"3D",clue:"When jazz clubs come alive",hint:"Dark hours",ans:"NIGHT"},{n:"6D",clue:"Bambi\'s species",hint:"Forest animal",ans:"DEER"},{n:"4D",clue:"Strawberry or raspberry, small and sweet",hint:"Small fruit",ans:"BERRY"}]},
+      },
+      {
+        grid:[["D","A","D","#","A"],["E","R","R","O","R"],["L","E","A","V","E"],["T","A","K","E","N"],["A","#","E","R","A"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Father figure who loves jazz",hint:"Male parent",ans:"DAD"},{n:"5A",clue:"A wrong note in the middle of a solo",hint:"Mistake",ans:"ERROR"},{n:"7A",clue:"Depart from the club after the set",hint:"Go away",ans:"LEAVE"},{n:"8A",clue:"Already ___, this melody belongs to someone",hint:"Occupied",ans:"TAKEN"},{n:"9A",clue:"The bebop ___ was golden for jazz innovation",hint:"Time period",ans:"ERA"}],down:[{n:"1D",clue:"The ___ region where blues met jazz",hint:"River region",ans:"DELTA"},{n:"2D",clue:"The neighborhood where the club sits",hint:"Region",ans:"AREA"},{n:"3D",clue:"Male duck, or Sir ___ the rapper",hint:"Male duck",ans:"DRAKE"},{n:"6D",clue:"When the curtain falls, it\'s ___",hint:"Finished",ans:"OVER"},{n:"4D",clue:"Madison Square Garden or other venue",hint:"Large venue",ans:"ARENA"}]},
+      },
+      {
+        grid:[["M","E","T","#","B"],["O","X","I","D","E"],["T","I","G","E","R"],["O","T","H","E","R"],["R","#","T","R","Y"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"The musicians ___ backstage before the gig",hint:"Encountered",ans:"MET"},{n:"5A",clue:"Rust forms when metal reacts with ___",hint:"Chemical compound",ans:"OXIDE"},{n:"7A",clue:"Stripe-patterned big cat of the jungle",hint:"Wild feline",ans:"TIGER"},{n:"8A",clue:"The flip side, or the ___ tune in the set",hint:"Alternate",ans:"OTHER"},{n:"9A",clue:"Give it a ___ when learning new passages",hint:"Attempt",ans:"TRY"}],down:[{n:"1D",clue:"Engine driving the beat forward",hint:"Power source",ans:"MOTOR"},{n:"2D",clue:"Emergency ___ sign points toward the door",hint:"Way out",ans:"EXIT"},{n:"3D",clue:"A well-rehearsed ensemble is ___",hint:"Close-fitting",ans:"TIGHT"},{n:"6D",clue:"Graceful forest animal with antlers",hint:"Hoofed animal",ans:"DEER"},{n:"4D",clue:"Blueberry or blackberry",hint:"Small fruit",ans:"BERRY"}]},
+      },
+      {
+        grid:[["S","P","A","#","A"],["T","A","L","O","N"],["A","L","O","N","G"],["F","E","N","C","E"],["F","#","E","E","L"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Hot springs resort, or place to relax",hint:"Relaxation spot",ans:"SPA"},{n:"5A",clue:"An eagle\'s grip, or a sharp claw",hint:"Bird\'s claw",ans:"TALON"},{n:"7A",clue:"Come ___ to the concert with us",hint:"Together",ans:"ALONG"},{n:"8A",clue:"The rail around the stage, or to sell stolen goods",hint:"Barrier",ans:"FENCE"},{n:"9A",clue:"Slippery creature from the river",hint:"Water creature",ans:"EEL"}],down:[{n:"1D",clue:"The musical lines on which notes sit",hint:"Musicians\' lines",ans:"STAFF"},{n:"2D",clue:"Pale moonlight streaming through the window",hint:"Light-colored",ans:"PALE"},{n:"3D",clue:"Solo performance without accompaniment",hint:"By yourself",ans:"ALONE"},{n:"6D",clue:"___ upon a time the jazz legend was born",hint:"One time",ans:"ONCE"},{n:"4D",clue:"Heavenly being or a kind soul",hint:"Celestial being",ans:"ANGEL"}]},
+      },
+      {
+        grid:[["A","C","T","#","C"],["B","O","O","T","H"],["U","L","T","R","A"],["S","T","A","I","N"],["E","#","L","O","T"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Perform on stage, like a jazz trio",hint:"Perform",ans:"ACT"},{n:"5A",clue:"The private seating nook at the jazz club",hint:"Enclosed seating",ans:"BOOTH"},{n:"7A",clue:"That performance was ___ cool and sophisticated",hint:"Extremely",ans:"ULTRA"},{n:"8A",clue:"Spilled wine leaves a ___ on the tablecloth",hint:"Mark",ans:"STAIN"},{n:"9A",clue:"A parking ___ or your destiny",hint:"Portion",ans:"LOT"}],down:[{n:"1D",clue:"Mistreat an instrument by not tuning it",hint:"Mistreat",ans:"ABUSE"},{n:"2D",clue:"A young stallion, or the football team",hint:"Young horse",ans:"COLT"},{n:"3D",clue:"Sum up all the measures and rests",hint:"Complete sum",ans:"TOTAL"},{n:"6D",clue:"Three musicians playing together in harmony",hint:"Group of three",ans:"TRIO"},{n:"4D",clue:"Repeated call that builds energy",hint:"Rhythmic song",ans:"CHANT"}]},
+      },
+    ],
     solo: {word:"BLUES",hint:"Melancholy music, or Miles Davis feeling"},
-    groove: {theme:"Jazz Instruments",words:["SAX","BASS","DRUMS","PIANO","TRUMPET","HORN","FLUTE","ORGAN"],letters:"SAXBTRUMPETFLUTEHORNDRUMSPIANOBASSORGANRIFFAA".padEnd(64,"A").split("")},
+    groove: {theme:"Jazz Instruments",words:["SAX","BASS","DRUMS","PIANO","TRUMPET","HORN","FLUTE","ORGAN"],letters:["S","A","X","B","T","R","U","M","P","E","T","F","L","U","T","E","H","O","R","N","D","R","U","M","S","P","I","A","N","O","B","A","S","S","O","R","G","A","N","R","I","F","F","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A"]},
   },
   Rock: {
     cw: {
-      grid:[["H","E","N","D","R","I","X"],["A","#","O","#","I","#","#"],["R","E","V","E","R","B","S"],["D","#","E","#","F","#","T"],["S","T","L","A","F","I","A"],["#","#","S","#","S","#","G"],["C","L","A","P","T","O","E"]],
-      nums:{0:{0:1,2:2},2:{0:3,1:4},4:{0:5,1:6},6:{0:7}},
-      clues:{across:[{n:"1A",clue:"Jimi ___ (guitar god)",hint:"Purple Haze performer",ans:"HENDRIX"},{n:"3A",clue:"Echo effects",hint:"Sound bouncing back",ans:"REVERBS"},{n:"5A",clue:"Dropped a flat note",hint:"Went off-key",ans:"STLAFIA"},{n:"7A",clue:"Eric ___ (Cream guitarist)",hint:"Slowhand",ans:"CLAPTOE"}],down:[{n:"1D",clue:"Heavy, intense",hint:"Like metal music",ans:"HARDS#C"},{n:"2D",clue:"Not ever",hint:"At no time",ans:"NOVELS"},{n:"4D",clue:"Distorted guitar sound",hint:"Fuzzy tone effect",ans:"DEAFP"}]},
-      title:"Guitar Heroes",
+      grid:[["H","I","S","#","#","#","#"],["O","N","T","O","#","#","#"],["S","C","O","P","E","#","#"],["T","H","R","E","A","D","#"],["#","#","E","R","R","O","R"],["#","#","#","A","L","S","O"],["#","#","#","#","Y","E","W"]],
+      nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+      clues:{across:[{n:"1A",clue:"Belonging to the guy with the amp",hint:"Possessive pronoun",ans:"HIS"},{n:"4A",clue:"Aware of, or moving towards",hint:"Preposition meaning aware",ans:"ONTO"},{n:"6A",clue:"The range of your sonic reach",hint:"Extent or range",ans:"SCOPE"},{n:"8A",clue:"What holds your narrative together",hint:"Thin strand or theme",ans:"THREAD"},{n:"10A",clue:"Miss the note badly",hint:"Mistake",ans:"ERROR"},{n:"12A",clue:"Furthermore, from the front man",hint:"Plus or in addition",ans:"ALSO"},{n:"13A",clue:"Cemetery tree that\'s seen it all",hint:"Type of tree",ans:"YEW"}],down:[{n:"1D",clue:"Festival organizer or stage presence",hint:"Party giver",ans:"HOST"},{n:"2D",clue:"Tiny movement on the dial",hint:"Very small distance",ans:"INCH"},{n:"3D",clue:"Vintage record shop treasure hunt",hint:"Place to buy things",ans:"STORE"},{n:"5D",clue:"Pavarotti\'s domain—not exactly punk",hint:"Grand theatrical form",ans:"OPERA"},{n:"7D",clue:"Front-loaded in the set list",hint:"Near the beginning",ans:"EARLY"},{n:"9D",clue:"Hit of sonic medicine",hint:"Prescribed amount",ans:"DOSE"},{n:"11D",clue:"Commotion backstage",hint:"Loud argument",ans:"ROW"}]},
+      title:"Rock Crossword Day 1",
     },
+    cwDays: [
+      {
+        grid:[["H","I","S","#","#","#","#"],["O","N","T","O","#","#","#"],["S","C","O","P","E","#","#"],["T","H","R","E","A","D","#"],["#","#","E","R","R","O","R"],["#","#","#","A","L","S","O"],["#","#","#","#","Y","E","W"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"Belonging to the guy with the amp",hint:"Possessive pronoun",ans:"HIS"},{n:"4A",clue:"Aware of, or moving towards",hint:"Preposition meaning aware",ans:"ONTO"},{n:"6A",clue:"The range of your sonic reach",hint:"Extent or range",ans:"SCOPE"},{n:"8A",clue:"What holds your narrative together",hint:"Thin strand or theme",ans:"THREAD"},{n:"10A",clue:"Miss the note badly",hint:"Mistake",ans:"ERROR"},{n:"12A",clue:"Furthermore, from the front man",hint:"Plus or in addition",ans:"ALSO"},{n:"13A",clue:"Cemetery tree that\'s seen it all",hint:"Type of tree",ans:"YEW"}],down:[{n:"1D",clue:"Festival organizer or stage presence",hint:"Party giver",ans:"HOST"},{n:"2D",clue:"Tiny movement on the dial",hint:"Very small distance",ans:"INCH"},{n:"3D",clue:"Vintage record shop treasure hunt",hint:"Place to buy things",ans:"STORE"},{n:"5D",clue:"Pavarotti\'s domain—not exactly punk",hint:"Grand theatrical form",ans:"OPERA"},{n:"7D",clue:"Front-loaded in the set list",hint:"Near the beginning",ans:"EARLY"},{n:"9D",clue:"Hit of sonic medicine",hint:"Prescribed amount",ans:"DOSE"},{n:"11D",clue:"Commotion backstage",hint:"Loud argument",ans:"ROW"}]},
+        title:"Rock Crossword Day 1",
+      },
+      {
+        grid:[["S","U","P","#","#","#","#"],["W","R","A","P","#","#","#"],["A","G","I","L","E","#","#"],["T","E","N","A","N","T","#"],["#","#","T","I","T","A","N"],["#","#","#","D","E","M","O"],["#","#","#","#","R","E","D"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"Greet like you mean it",hint:"Casual greeting",ans:"SUP"},{n:"4A",clue:"Finish strong or package the deal",hint:"Complete or cover",ans:"WRAP"},{n:"6A",clue:"Quick on your feet, musically speaking",hint:"Nimble and quick",ans:"AGILE"},{n:"8A",clue:"Occupant of the stage spotlight",hint:"Someone who rents",ans:"TENANT"},{n:"10A",clue:"A colossus of the industry",hint:"Giant or powerful figure",ans:"TITAN"},{n:"12A",clue:"Early rough cut before the arena show",hint:"Test version",ans:"DEMO"},{n:"13A",clue:"Crimson stage backdrop or angry",hint:"Primary color",ans:"RED"}],down:[{n:"1D",clue:"Strike it quick—like a solo",hint:"Hit forcefully",ans:"SWAT"},{n:"2D",clue:"Push the boundaries of the song",hint:"Strong desire",ans:"URGE"},{n:"3D",clue:"Color the sound with emotion",hint:"Apply pigment",ans:"PAINT"},{n:"5D",clue:"Flannel uniform of grunge devotees",hint:"Tartan pattern",ans:"PLAID"},{n:"7D",clue:"Take the stage",hint:"Go in",ans:"ENTER"},{n:"9D",clue:"Domesticate the noise",hint:"Make docile",ans:"TAME"},{n:"11D",clue:"Acknowledging the beat",hint:"Head gesture",ans:"NOD"}]},
+        title:"Rock Crossword Day 2",
+      },
+      {
+        grid:[["Y","A","W","#","#","#","#"],["E","X","E","C","#","#","#"],["A","L","A","R","M","#","#"],["R","E","V","E","A","L","#"],["#","#","E","S","S","A","Y"],["#","#","#","T","O","N","E"],["#","#","#","#","N","E","T"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"Veer off course like a ship or feedback",hint:"Swerve or deviate",ans:"YAW"},{n:"4A",clue:"The suits making the decisions",hint:"Business leader (abbr.)",ans:"EXEC"},{n:"6A",clue:"Wake-up call of distorted guitars",hint:"Alert or warning",ans:"ALARM"},{n:"8A",clue:"Unmask the big secret on track four",hint:"Disclose",ans:"REVEAL"},{n:"10A",clue:"Lengthy meditation on a topic—like a prog rock suite",hint:"Formal composition",ans:"ESSAY"},{n:"12A",clue:"The signature guitar sound",hint:"Quality of sound",ans:"TONE"},{n:"13A",clue:"The touring circuit—you\'re caught in it",hint:"Mesh or web",ans:"NET"}],down:[{n:"1D",clue:"Twelve months of touring",hint:"365 days",ans:"YEAR"},{n:"2D",clue:"Spindle, or axe player\'s tool",hint:"Wheel shaft",ans:"AXLE"},{n:"3D",clue:"Interlace the melody and rhythm",hint:"Intertwine",ans:"WEAVE"},{n:"5D",clue:"Peak of the crescendo",hint:"Summit or top",ans:"CREST"},{n:"7D",clue:"Jar or the blues legend",hint:"Builder or craftsperson",ans:"MASON"},{n:"9D",clue:"Traffic route or your path to stardom",hint:"Narrow road",ans:"LANE"},{n:"11D",clue:"Still waiting for the chorus",hint:"However or still",ans:"YET"}]},
+        title:"Rock Crossword Day 3",
+      },
+      {
+        grid:[["P","A","L","#","#","#","#"],["E","X","E","C","#","#","#"],["A","L","A","R","M","#","#"],["R","E","V","E","A","L","#"],["#","#","E","S","S","A","Y"],["#","#","#","T","O","N","E"],["#","#","#","#","N","E","T"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"Bandmate in the trenches",hint:"Close friend",ans:"PAL"},{n:"4A",clue:"The corner office dweller",hint:"Business leader (abbr.)",ans:"EXEC"},{n:"6A",clue:"Siren song or warning bell",hint:"Warning device",ans:"ALARM"},{n:"8A",clue:"Pull back the curtain on the hook",hint:"Make known",ans:"REVEAL"},{n:"10A",clue:"Think piece stretching multiple verses",hint:"Composition",ans:"ESSAY"},{n:"12A",clue:"Dial in the perfect attack",hint:"Sound quality",ans:"TONE"},{n:"13A",clue:"Industry roadmap or catch",hint:"Web or mesh",ans:"NET"}],down:[{n:"1D",clue:"Fruit or a body shape for guitars",hint:"Stone fruit",ans:"PEAR"},{n:"2D",clue:"Rod keeping wheels on track",hint:"Wheel shaft",ans:"AXLE"},{n:"3D",clue:"Exit stage or depart",hint:"Go away",ans:"LEAVE"},{n:"5D",clue:"The apex before the fade",hint:"Peak or summit",ans:"CREST"},{n:"7D",clue:"Craftsperson or jar maker",hint:"Builder",ans:"MASON"},{n:"9D",clue:"Corridor through the crowd",hint:"Narrow passage",ans:"LANE"},{n:"11D",clue:"Not finished, the bridge awaits",hint:"Still or however",ans:"YET"}]},
+        title:"Rock Crossword Day 4",
+      },
+      {
+        grid:[["H","E","R","#","#","#","#"],["E","V","I","L","#","#","#"],["L","E","G","A","L","#","#"],["P","R","I","S","O","N","#"],["#","#","D","E","C","O","R"],["#","#","#","R","A","V","E"],["#","#","#","#","L","A","D"]],
+        nums:{0:{0:1,1:2,2:3},1:{0:4,3:5},2:{0:6,4:7},3:{0:8,5:9},4:{2:10,6:11},5:{3:12},6:{4:13}},
+        clues:{across:[{n:"1A",clue:"The muse behind the ballad",hint:"Female pronoun",ans:"HER"},{n:"4A",clue:"The dark side of rock and roll",hint:"Wickedness",ans:"EVIL"},{n:"6A",clue:"Within the law or permissible",hint:"Lawful",ans:"LEGAL"},{n:"8A",clue:"Where the blues come from",hint:"Jail or detention",ans:"PRISON"},{n:"10A",clue:"Staging ambiance and visual vibe",hint:"Room furnishings",ans:"DECOR"},{n:"12A",clue:"Dance party or critical acclaim",hint:"Enthusiastic review",ans:"RAVE"},{n:"13A",clue:"Young guy with dreams",hint:"Boy",ans:"LAD"}],down:[{n:"1D",clue:"Lend a hand or cry for assistance",hint:"Aid or support",ans:"HELP"},{n:"2D",clue:"At any point in the timeline",hint:"At any time",ans:"EVER"},{n:"3D",clue:"Stiff as a board or inflexible",hint:"Not bendable",ans:"RIGID"},{n:"5D",clue:"Light show spectacle or precision",hint:"Intense beam",ans:"LASER"},{n:"7D",clue:"Neighborhood gig or bar band",hint:"Regional",ans:"LOCAL"},{n:"9D",clue:"A star exploding on the charts",hint:"Bright burst",ans:"NOVA"},{n:"11D",clue:"Crimson or in the negative",hint:"Primary color",ans:"RED"}]},
+        title:"Rock Crossword Day 5",
+      },
+      {
+        grid:[["S","#","S","H","Y","#","M"],["U","N","D","E","R","G","O"],["M","O","#","A","#","H","U"],["M","I","L","L","I","O","N"],["A","S","#","I","#","S","T"],["R","E","U","N","I","T","E"],["Y","#","E","G","O","#","D"]],
+        nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+        clues:{across:[{n:"2A",clue:"Bashful or hesitant at the mic",hint:"Timid",ans:"SHY"},{n:"5A",clue:"Experience the transformation",hint:"Endure or suffer",ans:"UNDERGO"},{n:"8A",clue:"Platinum record territory",hint:"Thousand thousands",ans:"MILLION"},{n:"9A",clue:"Reunion tour announcement—here we go again",hint:"Come together again",ans:"REUNITE"},{n:"10A",clue:"Rock star\'s inflated sense of self",hint:"Self-esteem",ans:"EGO"}],down:[{n:"1D",clue:"Brief recap of the album\'s thesis",hint:"Overview",ans:"SUMMARY"},{n:"6D",clue:"Distortion cranked to eleven",hint:"Unwanted sound",ans:"NOISE"},{n:"3D",clue:"What a good song can do",hint:"Recovery or therapy",ans:"HEALING"},{n:"7D",clue:"Haunting melody that won\'t leave",hint:"Specter or phantom",ans:"GHOST"},{n:"4D",clue:"Fixed onto the wall or stage rig",hint:"Attached or fastened",ans:"MOUNTED"}]},
+        title:"Rock Crossword Day 6",
+      },
+      {
+        grid:[["C","#","A","G","E","#","R"],["A","C","Q","U","I","R","E"],["S","L","#","A","#","A","C"],["C","O","R","R","O","D","E"],["A","N","#","D","#","I","I"],["D","E","V","E","L","O","P"],["E","#","O","D","E","#","T"]],
+        nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+        clues:{across:[{n:"2A",clue:"Era or how long you\'ve been grinding",hint:"Period of time",ans:"AGE"},{n:"5A",clue:"Pick up new gear or a new skill",hint:"Obtain or get",ans:"ACQUIRE"},{n:"8A",clue:"Rust away or deteriorate slowly",hint:"Decay or erode",ans:"CORRODE"},{n:"9A",clue:"Craft and hone the sound",hint:"Grow or evolve",ans:"DEVELOP"},{n:"10A",clue:"Lyrical tribute to your heroes",hint:"Poetic praise",ans:"ODE"}],down:[{n:"1D",clue:"Waterfall effect or smooth cascade of notes",hint:"Waterfall",ans:"CASCADE"},{n:"6D",clue:"Carbon copy or duplicate act",hint:"Identical copy",ans:"CLONE"},{n:"3D",clue:"Protected or carefully watched",hint:"Cautious or protected",ans:"GUARDED"},{n:"7D",clue:"Where the hits get spun",hint:"Broadcast medium",ans:"RADIO"},{n:"4D",clue:"Proof of the transaction or show attended",hint:"Purchase proof",ans:"RECEIPT"}]},
+        title:"Rock Crossword Day 7",
+      },
+    ],
     mini: {
-      grid:[["R","I","F","F","S"],["O","#","U","#","T"],["C","H","Z","Z","A"],["K","#","#","#","G"],["S","H","R","E","E"]],
-      nums:{0:{0:1},2:{0:2,1:3},4:{0:4,1:5}},
-      clues:{across:[{n:"1A",clue:"Repeating guitar phrases",hint:"AC/DC's bread and butter",ans:"RIFFS"},{n:"2A",clue:"Jazz or fizzy sound",hint:"Energetic confusion",ans:"CHZZA"},{n:"4A",clue:"High-pitched scream (var.)",hint:"Metal vocal technique",ans:"SHREE"}],down:[{n:"1D",clue:"Hard music genre",hint:"Led Zeppelin's genre",ans:"ROCKS"},{n:"3D",clue:"Guitar effect, distortion",hint:"Fuzzy sound pedal",ans:"FUZZ#R"}]},
+      grid:[["S","P","A","#","A"],["H","O","N","O","R"],["O","L","I","V","E"],["W","O","M","E","N"],["N","#","E","R","A"]],
+      nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+      clues:{across:[{n:"1A",clue:"Resort for relaxation and pampering",hint:"Health resort",ans:"SPA"},{n:"5A",clue:"Pay respect or recognition",hint:"Show respect",ans:"HONOR"},{n:"7A",clue:"Branch symbol of peace",hint:"Green fruit",ans:"OLIVE"},{n:"8A",clue:"The other half of the audience",hint:"Females",ans:"WOMEN"},{n:"9A",clue:"Period when the sound defined a generation",hint:"Time period",ans:"ERA"}],down:[{n:"1D",clue:"Displayed on stage or revealed",hint:"Revealed or displayed",ans:"SHOWN"},{n:"2D",clue:"Sport with mallets or Ralph\'s brand",hint:"Sports game",ans:"POLO"},{n:"3D",clue:"Japanese animation style",hint:"Cartoon form",ans:"ANIME"},{n:"6D",clue:"Finished or completed the set",hint:"Finished",ans:"OVER"},{n:"4D",clue:"Where the big shows happen",hint:"Large venue",ans:"ARENA"}]},
     },
+    miniDays: [
+      {
+        grid:[["S","P","A","#","A"],["H","O","N","O","R"],["O","L","I","V","E"],["W","O","M","E","N"],["N","#","E","R","A"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Resort for relaxation and pampering",hint:"Health resort",ans:"SPA"},{n:"5A",clue:"Pay respect or recognition",hint:"Show respect",ans:"HONOR"},{n:"7A",clue:"Branch symbol of peace",hint:"Green fruit",ans:"OLIVE"},{n:"8A",clue:"The other half of the audience",hint:"Females",ans:"WOMEN"},{n:"9A",clue:"Period when the sound defined a generation",hint:"Time period",ans:"ERA"}],down:[{n:"1D",clue:"Displayed on stage or revealed",hint:"Revealed or displayed",ans:"SHOWN"},{n:"2D",clue:"Sport with mallets or Ralph\'s brand",hint:"Sports game",ans:"POLO"},{n:"3D",clue:"Japanese animation style",hint:"Cartoon form",ans:"ANIME"},{n:"6D",clue:"Finished or completed the set",hint:"Finished",ans:"OVER"},{n:"4D",clue:"Where the big shows happen",hint:"Large venue",ans:"ARENA"}]},
+      },
+      {
+        grid:[["A","C","T","#","C"],["B","O","O","T","H"],["U","L","T","R","A"],["S","T","A","I","R"],["E","#","L","O","T"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Perform on stage or pretend",hint:"Perform",ans:"ACT"},{n:"5A",clue:"Phone box or merch stand",hint:"Small room",ans:"BOOTH"},{n:"7A",clue:"Beyond extreme or super",hint:"Beyond all limits",ans:"ULTRA"},{n:"8A",clue:"Steps up to the stage",hint:"Steps",ans:"STAIR"},{n:"9A",clue:"Parking area or fortune\'s share",hint:"Parking area",ans:"LOT"}],down:[{n:"1D",clue:"Mistreat or harsh criticism",hint:"Mistreatment",ans:"ABUSE"},{n:"2D",clue:"Young horse or NFL team",hint:"Young horse",ans:"COLT"},{n:"3D",clue:"Complete or the entire sum",hint:"Entire amount",ans:"TOTAL"},{n:"6D",clue:"Three-piece band formation",hint:"Group of three",ans:"TRIO"},{n:"4D",clue:"Billboard ranking or musical map",hint:"Ranking list",ans:"CHART"}]},
+      },
+      {
+        grid:[["S","A","G","#","S"],["M","I","R","T","H"],["A","D","O","R","E"],["L","E","V","E","L"],["L","#","E","E","L"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Droop or decline in energy",hint:"Sag or droop",ans:"SAG"},{n:"5A",clue:"Laughter and joy at the gig",hint:"Joyfulness",ans:"MIRTH"},{n:"7A",clue:"Love deeply or worship",hint:"Love greatly",ans:"ADORE"},{n:"8A",clue:"Even ground or skill rank",hint:"Flat or even",ans:"LEVEL"},{n:"9A",clue:"Slippery river fish",hint:"Aquatic creature",ans:"EEL"}],down:[{n:"1D",clue:"Intimate venue or diminutive",hint:"Tiny",ans:"SMALL"},{n:"2D",clue:"Helper or assistant",hint:"Assistant",ans:"AIDE"},{n:"3D",clue:"Trees grouped together",hint:"Group of trees",ans:"GROVE"},{n:"6D",clue:"Oak or pine growing tall",hint:"Woody plant",ans:"TREE"},{n:"4D",clue:"Outer case or clam covering",hint:"Hard outer case",ans:"SHELL"}]},
+      },
+      {
+        grid:[["W","E","T","#","B"],["R","A","I","S","E"],["E","R","R","O","R"],["C","L","E","A","R"],["K","#","D","R","Y"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Soaked or fresh off the press",hint:"Drenched",ans:"WET"},{n:"5A",clue:"Lift up or increase the volume",hint:"Lift up",ans:"RAISE"},{n:"7A",clue:"Botched note or miscalculation",hint:"Mistake",ans:"ERROR"},{n:"8A",clue:"Transparent or obvious",hint:"Transparent",ans:"CLEAR"},{n:"9A",clue:"Lacking moisture or humor",hint:"Not wet",ans:"DRY"}],down:[{n:"1D",clue:"Destroy or accident aftermath",hint:"Destruction",ans:"WRECK"},{n:"2D",clue:"British nobleman or Grey\'s tea",hint:"Nobleman",ans:"EARL"},{n:"3D",clue:"Exhausted from touring or clichéd",hint:"Weary",ans:"TIRED"},{n:"6D",clue:"Rise high on the wings of a solo",hint:"Fly high",ans:"SOAR"},{n:"4D",clue:"Small fruit like strawberry",hint:"Small fruit",ans:"BERRY"}]},
+      },
+      {
+        grid:[["S","U","M","#","S"],["T","R","U","M","P"],["A","G","R","E","E"],["L","E","A","S","E"],["L","#","L","A","D"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Total or add it all up",hint:"Total amount",ans:"SUM"},{n:"5A",clue:"Surpass or card suit",hint:"Defeat",ans:"TRUMP"},{n:"7A",clue:"Consent or nod along",hint:"Concur",ans:"AGREE"},{n:"8A",clue:"Rental agreement or contract",hint:"Rental contract",ans:"LEASE"},{n:"9A",clue:"Young fellow or Irish boy",hint:"Young boy",ans:"LAD"}],down:[{n:"1D",clue:"Booth or delay the action",hint:"Booth or delay",ans:"STALL"},{n:"2D",clue:"Strong desire or push forward",hint:"Strong desire",ans:"URGE"},{n:"3D",clue:"Wall painting or street art",hint:"Wall art",ans:"MURAL"},{n:"6D",clue:"Flat-topped desert mountain",hint:"Geological formation",ans:"MESA"},{n:"4D",clue:"Velocity or stimulant",hint:"Velocity",ans:"SPEED"}]},
+      },
+      {
+        grid:[["S","U","M","#","S"],["T","R","U","M","P"],["A","G","R","E","E"],["L","E","A","S","E"],["E","#","L","A","D"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Grand total or the whole thing",hint:"Total",ans:"SUM"},{n:"5A",clue:"Outdo or card advantage",hint:"Surpass",ans:"TRUMP"},{n:"7A",clue:"Shake hands on it",hint:"Concur",ans:"AGREE"},{n:"8A",clue:"Rent or temporary ownership",hint:"Rental",ans:"LEASE"},{n:"9A",clue:"Youthful male presence",hint:"Boy",ans:"LAD"}],down:[{n:"1D",clue:"Old and tiresome",hint:"Not fresh",ans:"STALE"},{n:"2D",clue:"Compelling need or push",hint:"Strong desire",ans:"URGE"},{n:"3D",clue:"Painted story on a wall",hint:"Wall painting",ans:"MURAL"},{n:"6D",clue:"Southwestern flat-top mountain",hint:"Desert plateau",ans:"MESA"},{n:"4D",clue:"How fast the tempo goes",hint:"Velocity",ans:"SPEED"}]},
+      },
+      {
+        grid:[["S","U","M","#","S"],["T","R","U","M","P"],["A","G","R","E","E"],["L","E","A","R","N"],["E","#","L","E","T"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"The aggregate of the parts",hint:"Total",ans:"SUM"},{n:"5A",clue:"Beat at the game",hint:"Surpass",ans:"TRUMP"},{n:"7A",clue:"Give your assent",hint:"Concur",ans:"AGREE"},{n:"8A",clue:"Master the skill or get educated",hint:"Acquire knowledge",ans:"LEARN"},{n:"9A",clue:"Allow or permit",hint:"Permit",ans:"LET"}],down:[{n:"1D",clue:"Bygone or musty",hint:"Not fresh",ans:"STALE"},{n:"2D",clue:"An inner push or compulsion",hint:"Strong desire",ans:"URGE"},{n:"3D",clue:"Public wall canvas",hint:"Wall art",ans:"MURAL"},{n:"6D",clue:"Just or only that",hint:"Only",ans:"MERE"},{n:"4D",clue:"Exhausted or used up",hint:"Worn out",ans:"SPENT"}]},
+      },
+    ],
     solo: {word:"STAGE",hint:"Where Mick Jagger struts"},
-    groove: {theme:"Rock Subgenres",words:["PUNK","METAL","GRUNGE","PROG","INDIE","BLUES","SURF","GLAM"],letters:"PUNKMETALGRUNGEPROGINDIEBLUESURFGLAMROCKBAND".padEnd(64,"A").split("")},
+    groove: {theme:"Rock Subgenres",words:["PUNK","METAL","GRUNGE","PROG","INDIE","BLUES","SURF","GLAM"],letters:["P","U","N","K","M","E","T","A","L","G","R","U","N","G","E","P","R","O","G","I","N","D","I","E","B","L","U","E","S","U","R","F","G","L","A","M","R","O","C","K","B","A","N","D","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A"]},
   },
   "Pop Culture": {
     cw: {
-      grid:[["S","T","R","E","A","M","S"],["W","#","E","#","L","#","T"],["I","C","O","N","B","U","A"],["F","#","N","#","U","#","R"],["T","R","E","N","M","I","S"],["#","#","D","#","S","#","#"],["V","I","R","A","L","L","Y"]],
-      nums:{0:{0:1,2:2},2:{0:3,1:4},4:{0:5,1:6},6:{0:7}},
-      clues:{across:[{n:"1A",clue:"Spotify play counts",hint:"Digital listens",ans:"STREAMS"},{n:"3A",clue:"Cultural symbol",hint:"Madonna, Beyonce level",ans:"ICONBUA"},{n:"5A",clue:"Popular direction",hint:"What's hot right now",ans:"TRENMIS"},{n:"7A",clue:"Spreading online rapidly",hint:"TikTok's dream",ans:"VIRALLY"}],down:[{n:"1D",clue:"Taylor ___ (pop queen)",hint:"Eras Tour artist",ans:"SWIFT#V"},{n:"2D",clue:"___ album (band's best-of)",hint:"Greatest hits collection",ans:"RECORD"},{n:"4D",clue:"Musical collections",hint:"Spotify curated lists",ans:"ENNAY"}]},
-      title:"Chart Toppers",
+      grid:[["H","#","I","C","Y","#","R"],["A","D","V","E","R","S","E"],["P","R","#","N","#","O","L"],["P","E","R","S","O","N","A"],["I","A","#","U","#","I","X"],["E","M","B","R","A","C","E"],["R","#","G","E","L","#","D"]],
+      nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+      clues:{across:[{n:"2A",clue:"Frozen over, or how Drake stays cool",hint:"Cold and detached",ans:"ICY"},{n:"5A",clue:"Working against you",hint:"Unfavorable or negative",ans:"ADVERSE"},{n:"8A",clue:"Your on-stage character, basically",hint:"Public image or alter ego",ans:"PERSONA"},{n:"9A",clue:"Hug it out or accept it",hint:"Hold tightly or welcome",ans:"EMBRACE"},{n:"10A",clue:"Hair product or jibe together",hint:"Styling agent or harmonize",ans:"GEL"}],down:[{n:"1D",clue:"More joyful—Marshmello and Bastille vibes",hint:"Greater joy or contentment",ans:"HAPPIER"},{n:"6D",clue:"Rihanna\'s reality or your nighttime fantasy",hint:"Aspiration or reverie",ans:"DREAM"},{n:"3D",clue:"Official reprimand or disapproval",hint:"Formal criticism",ans:"CENSURE"},{n:"7D",clue:"Fast hedgehog or relating to sound",hint:"Quick or audio-related",ans:"SONIC"},{n:"4D",clue:"Chill vibes or not tense",hint:"At ease or loose",ans:"RELAXED"}]},
+      title:"Pop Culture Crossword Day 1",
     },
+    cwDays: [
+      {
+        grid:[["H","#","I","C","Y","#","R"],["A","D","V","E","R","S","E"],["P","R","#","N","#","O","L"],["P","E","R","S","O","N","A"],["I","A","#","U","#","I","X"],["E","M","B","R","A","C","E"],["R","#","G","E","L","#","D"]],
+        nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+        clues:{across:[{n:"2A",clue:"Frozen over, or how Drake stays cool",hint:"Cold and detached",ans:"ICY"},{n:"5A",clue:"Working against you",hint:"Unfavorable or negative",ans:"ADVERSE"},{n:"8A",clue:"Your on-stage character, basically",hint:"Public image or alter ego",ans:"PERSONA"},{n:"9A",clue:"Hug it out or accept it",hint:"Hold tightly or welcome",ans:"EMBRACE"},{n:"10A",clue:"Hair product or jibe together",hint:"Styling agent or harmonize",ans:"GEL"}],down:[{n:"1D",clue:"More joyful—Marshmello and Bastille vibes",hint:"Greater joy or contentment",ans:"HAPPIER"},{n:"6D",clue:"Rihanna\'s reality or your nighttime fantasy",hint:"Aspiration or reverie",ans:"DREAM"},{n:"3D",clue:"Official reprimand or disapproval",hint:"Formal criticism",ans:"CENSURE"},{n:"7D",clue:"Fast hedgehog or relating to sound",hint:"Quick or audio-related",ans:"SONIC"},{n:"4D",clue:"Chill vibes or not tense",hint:"At ease or loose",ans:"RELAXED"}]},
+        title:"Pop Culture Crossword Day 1",
+      },
+      {
+        grid:[["P","#","B","E","T","#","B"],["R","E","P","L","I","C","A"],["E","P","#","E","#","U","T"],["C","O","N","V","E","R","T"],["I","C","#","A","#","V","E"],["S","H","U","T","T","E","R"],["E","#","S","E","A","#","Y"]],
+        nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+        clues:{across:[{n:"2A",clue:"You wager this or say \'bet fam\' in agreement",hint:"Wager or slang confirmation",ans:"BET"},{n:"5A",clue:"Fake Yeezys or a knock-off",hint:"Copy or imitation",ans:"REPLICA"},{n:"8A",clue:"Change sides or transform",hint:"Switch or alter",ans:"CONVERT"},{n:"9A",clue:"Window covering or what cameras do",hint:"Blind or photo device",ans:"SHUTTER"},{n:"10A",clue:"Ocean body or C-note in music",hint:"Saltwater expanse",ans:"SEA"}],down:[{n:"1D",clue:"Exact and accurate, no cap",hint:"Exact or meticulous",ans:"PRECISE"},{n:"6D",clue:"Historic era or Taylor\'s re-recording cycle",hint:"Time period",ans:"EPOCH"},{n:"3D",clue:"Lift up or boost the energy",hint:"Raise or improve",ans:"ELEVATE"},{n:"7D",clue:"Mathematical bend or reject someone",hint:"Arc shape or reject",ans:"CURVE"},{n:"4D",clue:"Device that powers your phone or a drum part",hint:"Power cell or percussion section",ans:"BATTERY"}]},
+        title:"Pop Culture Crossword Day 2",
+      },
+      {
+        grid:[["S","#","D","E","W","#","P"],["C","L","U","S","T","E","R"],["R","U","#","S","#","X","I"],["A","N","G","E","L","I","C"],["T","C","#","N","#","L","I"],["C","H","I","C","K","E","N"],["H","#","S","E","W","#","G"]],
+        nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+        clues:{across:[{n:"2A",clue:"Morning moisture on grass",hint:"Drops of water",ans:"DEW"},{n:"5A",clue:"Group together or a bunch of stars",hint:"Collection or bundle",ans:"CLUSTER"},{n:"8A",clue:"Pure and innocent, like an angel",hint:"Heavenly or saintly",ans:"ANGELIC"},{n:"9A",clue:"Poultry or someone lacking courage",hint:"Bird or coward",ans:"CHICKEN"},{n:"10A",clue:"Stitch fabric together",hint:"Join with thread",ans:"SEW"}],down:[{n:"1D",clue:"DJ technique or minor wound",hint:"Turntable move or scrape",ans:"SCRATCH"},{n:"6D",clue:"Midday meal or what you launch from",hint:"Noon food or send off",ans:"LUNCH"},{n:"3D",clue:"Core nature or vibe",hint:"Basic quality or spirit",ans:"ESSENCE"},{n:"7D",clue:"Banishment or Taylor\'s album that went hard",hint:"Forced departure",ans:"EXILE"},{n:"4D",clue:"Setting the cost of something",hint:"Cost determination",ans:"PRICING"}]},
+        title:"Pop Culture Crossword Day 3",
+      },
+      {
+        grid:[["S","#","E","M","U","#","C"],["T","O","B","A","C","C","O"],["U","P","#","R","#","R","M"],["D","E","S","K","T","O","P"],["I","R","#","I","#","S","E"],["E","A","R","N","E","S","T"],["S","#","A","G","E","#","E"]],
+        nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+        clues:{across:[{n:"2A",clue:"Tall flightless bird from Australia",hint:"Ostrich cousin",ans:"EMU"},{n:"5A",clue:"Cigarette ingredient nobody\'s vibing with anymore",hint:"Smoking plant",ans:"TOBACCO"},{n:"8A",clue:"Your work surface or computer interface",hint:"Work area or screen",ans:"DESKTOP"},{n:"9A",clue:"Sincere and genuine in intention",hint:"Serious or honest",ans:"EARNEST"},{n:"10A",clue:"How many years old you are",hint:"Years lived",ans:"AGE"}],down:[{n:"1D",clue:"Research or hitting the books",hint:"Academic work",ans:"STUDIES"},{n:"6D",clue:"Diva\'s stage or what Kanye sampled heavy",hint:"Classical music form",ans:"OPERA"},{n:"3D",clue:"Leaving a visible sign or grading papers",hint:"Sign or assessment",ans:"MARKING"},{n:"7D",clue:"Angry mood or like this puzzle",hint:"Irritated or intersecting",ans:"CROSS"},{n:"4D",clue:"Vie for position or go head-to-head",hint:"Contest or challenge",ans:"COMPETE"}]},
+        title:"Pop Culture Crossword Day 4",
+      },
+      {
+        grid:[["M","#","T","A","X","#","N"],["A","V","O","C","A","D","O"],["T","E","#","Q","#","E","V"],["T","R","O","U","B","L","E"],["E","S","#","I","#","T","L"],["R","E","T","R","E","A","T"],["S","#","G","E","L","#","Y"]],
+        nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+        clues:{across:[{n:"2A",clue:"Government take or strain something",hint:"Levy or burden",ans:"TAX"},{n:"5A",clue:"Toast-worthy green fruit Gen Z loves",hint:"Creamy green fruit",ans:"AVOCADO"},{n:"8A",clue:"Problem or when you\'re in it",hint:"Difficulty or hardship",ans:"TROUBLE"},{n:"9A",clue:"Tactical withdrawal or spa getaway",hint:"Withdraw or vacation",ans:"RETREAT"},{n:"10A",clue:"Product for your hair or clicking together",hint:"Hair product or mesh",ans:"GEL"}],down:[{n:"1D",clue:"It\'s important or the actual substance",hint:"Importance or stuff",ans:"MATTERS"},{n:"6D",clue:"Rap section or poem lines",hint:"Stanza or lyrical part",ans:"VERSE"},{n:"3D",clue:"Get or obtain something new",hint:"Gain or attain",ans:"ACQUIRE"},{n:"7D",clue:"Airline or river mouth shape",hint:"Triangle-shaped area",ans:"DELTA"},{n:"4D",clue:"Something fresh and unusual",hint:"Newness or oddity",ans:"NOVELTY"}]},
+        title:"Pop Culture Crossword Day 5",
+      },
+      {
+        grid:[["S","#","S","P","A","#","D"],["U","P","G","R","A","D","E"],["R","H","#","O","#","E","F"],["F","O","R","M","U","L","A"],["A","T","#","I","#","T","U"],["C","O","A","S","T","A","L"],["E","#","K","E","G","#","T"]],
+        nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+        clues:{across:[{n:"2A",clue:"Wellness retreat where you get pampered",hint:"Relaxation center",ans:"SPA"},{n:"5A",clue:"Improve to a better version",hint:"Enhance or better",ans:"UPGRADE"},{n:"8A",clue:"Recipe or math equation",hint:"Method or equation",ans:"FORMULA"},{n:"9A",clue:"Along the beach or ocean",hint:"Shoreline-adjacent",ans:"COASTAL"},{n:"10A",clue:"Beer barrel or party essential",hint:"Container for liquid",ans:"KEG"}],down:[{n:"1D",clue:"Top layer or appear publicly",hint:"Outer layer",ans:"SURFACE"},{n:"6D",clue:"Picture you\'re probably posting to Instagram",hint:"Picture or image",ans:"PHOTO"},{n:"3D",clue:"Vow or give your word",hint:"Pledge or commitment",ans:"PROMISE"},{n:"7D",clue:"Airline or triangular river mouth",hint:"Triangle shape",ans:"DELTA"},{n:"4D",clue:"Standard setting or failure to act",hint:"Standard or skip",ans:"DEFAULT"}]},
+        title:"Pop Culture Crossword Day 6",
+      },
+      {
+        grid:[["E","#","O","D","D","#","T"],["M","O","N","I","T","O","R"],["E","P","#","S","#","W","A"],["R","E","S","P","O","N","D"],["G","R","#","U","#","E","I"],["E","A","S","T","E","R","N"],["D","#","Y","E","A","#","G"]],
+        nums:{0:{0:1,2:2,3:3,6:4},1:{0:5,1:6,5:7},3:{0:8},5:{0:9},6:{2:10}},
+        clues:{across:[{n:"2A",clue:"Strange or not even numbers",hint:"Unusual or peculiar",ans:"ODD"},{n:"5A",clue:"Computer screen or keep watch",hint:"Display or observe",ans:"MONITOR"},{n:"8A",clue:"Reply or answer back",hint:"React or reply",ans:"RESPOND"},{n:"9A",clue:"Direction toward sunrise or coast",hint:"Sunrise direction",ans:"EASTERN"},{n:"10A",clue:"Affirmative vote or approval",hint:"Yes or approval",ans:"YEA"}],down:[{n:"1D",clue:"Came out or surfaced from nothing",hint:"Appeared or came forth",ans:"EMERGED"},{n:"6D",clue:"Elaborate vocal performance or what Oprah hosts",hint:"Classical music drama",ans:"OPERA"},{n:"3D",clue:"Argument or question the facts",hint:"Disagreement or contest",ans:"DISPUTE"},{n:"7D",clue:"Person who possesses something",hint:"Proprietor or possessor",ans:"OWNER"},{n:"4D",clue:"Buying and selling or swapping",hint:"Exchange or commerce",ans:"TRADING"}]},
+        title:"Pop Culture Crossword Day 7",
+      },
+    ],
     mini: {
-      grid:[["S","T","A","N","S"],["T","#","L","#","O"],["A","D","E","L","E"],["R","#","R","#","G"],["S","H","A","R","E"]],
-      nums:{0:{0:1},2:{0:2,1:3},4:{0:4,1:5}},
-      clues:{across:[{n:"1A",clue:"Obsessive superfans",hint:"Named from Eminem",ans:"STANS"},{n:"2A",clue:"British singer, one name",hint:"Hello, Rolling in the Deep",ans:"ADELE"},{n:"4A",clue:"Post on social media",hint:"Spread content",ans:"SHARE"}],down:[{n:"1D",clue:"Famous people",hint:"Celebrities",ans:"STARS"},{n:"3D",clue:"Warning, heads-up",hint:"Spoiler ___!",ans:"ALERT"}]},
+      grid:[["A","R","M","#","S"],["R","E","A","C","H"],["I","S","S","U","E"],["S","T","O","R","E"],["E","#","N","E","T"]],
+      nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+      clues:{across:[{n:"1A",clue:"Limb you point at things with",hint:"Upper body part",ans:"ARM"},{n:"5A",clue:"Extend toward or influence span",hint:"Stretch or extent",ans:"REACH"},{n:"7A",clue:"Problem or magazine edition",hint:"Matter or concern",ans:"ISSUE"},{n:"8A",clue:"Shop or save something up",hint:"Retail place or save",ans:"STORE"},{n:"9A",clue:"Catch fish in this or profit after taxes",hint:"Mesh or profit",ans:"NET"}],down:[{n:"1D",clue:"Stand up or come into being",hint:"Rise or emerge",ans:"ARISE"},{n:"2D",clue:"Chill out or what\'s left over",hint:"Relax or remainder",ans:"REST"},{n:"3D",clue:"Jar brand or stone worker",hint:"Container or builder",ans:"MASON"},{n:"6D",clue:"Heal or preserve meat",hint:"Treatment or preserve",ans:"CURE"},{n:"4D",clue:"Bed covering or thin paper",hint:"Bedding or thin layer",ans:"SHEET"}]},
     },
+    miniDays: [
+      {
+        grid:[["A","R","M","#","S"],["R","E","A","C","H"],["I","S","S","U","E"],["S","T","O","R","E"],["E","#","N","E","T"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Limb you point at things with",hint:"Upper body part",ans:"ARM"},{n:"5A",clue:"Extend toward or influence span",hint:"Stretch or extent",ans:"REACH"},{n:"7A",clue:"Problem or magazine edition",hint:"Matter or concern",ans:"ISSUE"},{n:"8A",clue:"Shop or save something up",hint:"Retail place or save",ans:"STORE"},{n:"9A",clue:"Catch fish in this or profit after taxes",hint:"Mesh or profit",ans:"NET"}],down:[{n:"1D",clue:"Stand up or come into being",hint:"Rise or emerge",ans:"ARISE"},{n:"2D",clue:"Chill out or what\'s left over",hint:"Relax or remainder",ans:"REST"},{n:"3D",clue:"Jar brand or stone worker",hint:"Container or builder",ans:"MASON"},{n:"6D",clue:"Heal or preserve meat",hint:"Treatment or preserve",ans:"CURE"},{n:"4D",clue:"Bed covering or thin paper",hint:"Bedding or thin layer",ans:"SHEET"}]},
+      },
+      {
+        grid:[["S","U","M","#","S"],["T","R","U","M","P"],["A","G","R","E","E"],["L","E","A","R","N"],["L","#","L","E","T"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Total amount or add it up",hint:"Total or total",ans:"SUM"},{n:"5A",clue:"Beat someone at cards or outdo",hint:"Card suit or surpass",ans:"TRUMP"},{n:"7A",clue:"Be on the same page or approve",hint:"Consent or concur",ans:"AGREE"},{n:"8A",clue:"Study to know something new",hint:"Acquire knowledge",ans:"LEARN"},{n:"9A",clue:"Allow to happen",hint:"Permit or allow",ans:"LET"}],down:[{n:"1D",clue:"Delay tactics or market booth",hint:"Delay or shop space",ans:"STALL"},{n:"2D",clue:"Strong desire or push hard",hint:"Impulse or encourage",ans:"URGE"},{n:"3D",clue:"Street art or wall painting",hint:"Wall artwork",ans:"MURAL"},{n:"6D",clue:"Just or simply that",hint:"Only or just",ans:"MERE"},{n:"4D",clue:"Used up money or exhausted",hint:"Tired or used",ans:"SPENT"}]},
+      },
+      {
+        grid:[["S","U","M","#","S"],["T","R","U","M","P"],["A","G","R","E","E"],["L","E","A","S","E"],["K","#","L","A","D"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"What you get when you add",hint:"Total or result",ans:"SUM"},{n:"5A",clue:"Winning card or biggest advantage",hint:"Card game trump or edge",ans:"TRUMP"},{n:"7A",clue:"Thumbs up or same opinion",hint:"Concur or consent",ans:"AGREE"},{n:"8A",clue:"Rental contract or give temporarily",hint:"Rental or loan",ans:"LEASE"},{n:"9A",clue:"Young boy or casual British guy",hint:"Young male",ans:"LAD"}],down:[{n:"1D",clue:"Follow closely or plant stem",hint:"Plant part or follow",ans:"STALK"},{n:"2D",clue:"Persistent desire or strongly encourage",hint:"Impulse or push",ans:"URGE"},{n:"3D",clue:"Large wall artwork",hint:"Wall painting",ans:"MURAL"},{n:"6D",clue:"Flat-topped mountain in the desert",hint:"Plateau or butte",ans:"MESA"},{n:"4D",clue:"How fast you\'re going",hint:"Velocity or pace",ans:"SPEED"}]},
+      },
+      {
+        grid:[["O","F","T","#","B"],["R","U","R","A","L"],["G","L","A","R","E"],["A","L","I","E","N"],["N","#","T","A","D"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Often or frequently in poetry",hint:"Frequently or many times",ans:"OFT"},{n:"5A",clue:"Country vibes not city",hint:"Countryside or pastoral",ans:"RURAL"},{n:"7A",clue:"Intense look or bright light shine",hint:"Harsh look or shine",ans:"GLARE"},{n:"8A",clue:"Extraterrestrial or foreigner",hint:"From space or foreign",ans:"ALIEN"},{n:"9A",clue:"Small amount or tiny bit",hint:"Little or smidge",ans:"TAD"}],down:[{n:"1D",clue:"Body part or keyboard instrument",hint:"Musical instrument or body part",ans:"ORGAN"},{n:"2D",clue:"Completely filled or at capacity",hint:"Completely packed",ans:"FULL"},{n:"3D",clue:"Characteristic or distinguishing quality",hint:"Quality or feature",ans:"TRAIT"},{n:"6D",clue:"Region or zone",hint:"Space or region",ans:"AREA"},{n:"4D",clue:"Mix together or harmonize",hint:"Combine or mix",ans:"BLEND"}]},
+      },
+      {
+        grid:[["O","F","T","#","B"],["R","U","R","A","L"],["G","L","A","R","E"],["A","L","I","E","N"],["N","#","L","A","D"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Frequently happening or regular",hint:"Often or many times",ans:"OFT"},{n:"5A",clue:"Farmland or non-urban",hint:"Countryside vibes",ans:"RURAL"},{n:"7A",clue:"Intense stare or dazzling light",hint:"Bright shine or look",ans:"GLARE"},{n:"8A",clue:"Being from another planet",hint:"From space or unfamiliar",ans:"ALIEN"},{n:"9A",clue:"Young boy or casual dude",hint:"Young male person",ans:"LAD"}],down:[{n:"1D",clue:"Pipe instrument or body system",hint:"Musical instrument or body part",ans:"ORGAN"},{n:"2D",clue:"No room left or at maximum",hint:"Completely filled",ans:"FULL"},{n:"3D",clue:"Path through woods or what you leave",hint:"Path or track",ans:"TRAIL"},{n:"6D",clue:"Geographic space or zone",hint:"Region or space",ans:"AREA"},{n:"4D",clue:"Mix smoothly together",hint:"Combine or mix well",ans:"BLEND"}]},
+      },
+      {
+        grid:[["A","C","T","#","B"],["M","U","R","A","L"],["P","R","I","C","E"],["L","E","A","R","N"],["E","#","L","E","D"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Perform or take action",hint:"Perform or deed",ans:"ACT"},{n:"5A",clue:"Large wall painting or street art",hint:"Wall artwork",ans:"MURAL"},{n:"7A",clue:"Cost or what something is worth",hint:"Cost or value",ans:"PRICE"},{n:"8A",clue:"Gain knowledge or study up",hint:"Acquire knowledge",ans:"LEARN"},{n:"9A",clue:"Guided or light bulb tech",hint:"Guided or light source",ans:"LED"}],down:[{n:"1D",clue:"Plenty of or sufficient",hint:"Plenty or plenty",ans:"AMPLE"},{n:"2D",clue:"Heal or remedy something",hint:"Treatment or heal",ans:"CURE"},{n:"3D",clue:"Test or court case",hint:"Test or court proceeding",ans:"TRIAL"},{n:"6D",clue:"Land measurement unit",hint:"Land measurement",ans:"ACRE"},{n:"4D",clue:"Mix smoothly or combine",hint:"Mix or combine",ans:"BLEND"}]},
+      },
+      {
+        grid:[["E","W","E","#","B"],["L","A","N","C","E"],["I","D","E","A","L"],["T","E","M","P","O"],["E","#","Y","E","W"]],
+        nums:{0:{0:1,1:2,2:3,4:4},1:{0:5,3:6},2:{0:7},3:{0:8},4:{2:9}},
+        clues:{across:[{n:"1A",clue:"Female sheep",hint:"Sheep or lamb",ans:"EWE"},{n:"5A",clue:"Spear or pierce through",hint:"Pointed weapon or pierce",ans:"LANCE"},{n:"7A",clue:"Perfect or what you aspire to",hint:"Perfect or best",ans:"IDEAL"},{n:"8A",clue:"Speed of music or pace",hint:"Speed or rhythm",ans:"TEMPO"},{n:"9A",clue:"Evergreen tree type",hint:"Tree or conifer",ans:"YEW"}],down:[{n:"1D",clue:"Top tier or the best",hint:"Best or upper class",ans:"ELITE"},{n:"2D",clue:"Walk through water",hint:"Walk through water",ans:"WADE"},{n:"3D",clue:"Opponent or foe",hint:"Foe or rival",ans:"ENEMY"},{n:"6D",clue:"Superhero garment or coastal point",hint:"Cloak or land jutting out",ans:"CAPE"},{n:"4D",clue:"Under or beneath",hint:"Underneath or lower",ans:"BELOW"}]},
+      },
+    ],
     solo: {word:"VIRAL",hint:"TikTok's ultimate goal"},
-    groove: {theme:"Streaming Terms",words:["SPOTIFY","SHUFFLE","SKIP","QUEUE","LOOP","REPEAT","PLAY","SHARE"],letters:"SPOTIFYSHUFFLESKIPQUEUELOOPREPEATPLAYSHAREAA".padEnd(64,"A").split("")},
+    groove: {theme:"Streaming Terms",words:["SPOTIFY","SHUFFLE","SKIP","QUEUE","LOOP","REPEAT","PLAY","SHARE"],letters:["S","P","O","T","I","F","Y","S","H","U","F","F","L","E","S","K","I","P","Q","U","E","U","E","L","O","O","P","R","E","P","E","A","T","P","L","A","Y","S","H","A","R","E","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A"]},
   },
 };
+
+// Day rotation: pick puzzle based on current date
+function getDayPuzzle(genreData, gameType) {
+  const days = genreData[gameType + "Days"];
+  if (!days || days.length === 0) return genreData[gameType];
+  const today = new Date();
+  const dayIndex = Math.floor((today.getTime() / 86400000)) % days.length;
+  return days[dayIndex];
+}
+
 
 // Color palette overrides
 const COLOR_PALETTES = {
@@ -265,14 +518,16 @@ function App() {
   }, [timerRunning]);
   const fmtTime = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
 
-  // Derived puzzle data from genre
+  // Derived puzzle data from genre (with daily rotation)
   const PZ = PUZZLE_DB[genre];
-  const CW_GRID = PZ.cw.grid;
-  const CW_NUMS = PZ.cw.nums;
-  const CW_CLUES = PZ.cw.clues;
-  const MINI_GRID = PZ.mini.grid;
-  const MINI_NUMS = PZ.mini.nums;
-  const MINI_CLUES = PZ.mini.clues;
+  const CW_DATA = getDayPuzzle(PZ, "cw");
+  const CW_GRID = CW_DATA.grid;
+  const CW_NUMS = CW_DATA.nums;
+  const CW_CLUES = CW_DATA.clues;
+  const MINI_DATA = getDayPuzzle(PZ, "mini");
+  const MINI_GRID = MINI_DATA.grid;
+  const MINI_NUMS = MINI_DATA.nums;
+  const MINI_CLUES = MINI_DATA.clues;
   const SOLO_WORD = PZ.solo.word;
   const GROOVE_WORDS = PZ.groove.words;
   const GROOVE_LETTERS = PZ.groove.letters;
@@ -322,9 +577,11 @@ function App() {
     if (prevGenreRef.current !== genre) {
       prevGenreRef.current = genre;
       const pz = PUZZLE_DB[genre];
-      setCwCells(pz.cw.grid.map(r => r.map(c => c === "#" ? "#" : "")));
+      const cwD = getDayPuzzle(pz, "cw");
+      const miniD = getDayPuzzle(pz, "mini");
+      setCwCells(cwD.grid.map(r => r.map(c => c === "#" ? "#" : "")));
       setCwActive([0,0]); setCwDir("across"); setCwRevealed(false);
-      setMiniCells(pz.mini.grid.map(r => r.map(c => c === "#" ? "#" : "")));
+      setMiniCells(miniD.grid.map(r => r.map(c => c === "#" ? "#" : "")));
       setMiniActive([0,0]); setMiniDir("across");
       setSoloGuesses([]); setSoloCurrent(""); setSoloGameOver(false);
       setGrooveSelected([]); setGrooveFound([]); setGrooveWrong(false);
